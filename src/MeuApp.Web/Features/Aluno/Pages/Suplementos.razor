@@ -1,0 +1,72 @@
+@page "/suplementos"
+
+<PageTitle>Suplementos</PageTitle>
+
+<div class="student-page supplements-page list-page">
+    <header class="screen-header">
+        <h1>Meus suplementos</h1>
+    </header>
+
+    <section class="panel-card list-panel">
+        @foreach (var suplemento in ItensSuplementacao)
+        {
+            <article class="list-row">
+                <div class="icon-box @suplemento.CorIcone">
+                    <i class="bi @suplemento.Icone" aria-hidden="true"></i>
+                </div>
+                <div class="row-text">
+                    <strong>@suplemento.Nome</strong>
+                    <span>@suplemento.Orientacao</span>
+                </div>
+
+                <button class="status-badge completion-button @(suplemento.Concluido ? "success" : "warning")"
+                        type="button"
+                        disabled="@suplemento.Concluido"
+                        @onclick="() => MarcarSuplementoConcluido(suplemento)">
+                    @if (suplemento.Concluido)
+                    {
+                        <i class="bi bi-check2" aria-hidden="true"></i>
+                        <span>Concluído</span>
+                    }
+                    else
+                    {
+                        <span>Marcar concluído</span>
+                    }
+                </button>
+            </article>
+        }
+    </section>
+</div>
+
+@code {
+    private readonly List<SuplementoPlano> ItensSuplementacao =
+    [
+        new("Whey Protein — 30g", "Pós-treino e café da manhã", "bi-droplet", "icon-sky", true),
+        new("Creatina — 5g", "Qualquer horário com água", "bi-lightning-charge", "icon-mint", true),
+        new("Vitamina D3 — 2000 UI", "Com o almoço", "bi-sun", "icon-cream", false),
+        new("Ômega 3 — 2 cápsulas", "Com as refeições", "bi-heart", "icon-peach", false)
+    ];
+
+    private static void MarcarSuplementoConcluido(SuplementoPlano suplemento)
+    {
+        suplemento.Concluido = true;
+    }
+
+    private sealed class SuplementoPlano
+    {
+        public SuplementoPlano(string nome, string orientacao, string icone, string corIcone, bool concluido)
+        {
+            Nome = nome;
+            Orientacao = orientacao;
+            Icone = icone;
+            CorIcone = corIcone;
+            Concluido = concluido;
+        }
+
+        public string Nome { get; }
+        public string Orientacao { get; }
+        public string Icone { get; }
+        public string CorIcone { get; }
+        public bool Concluido { get; set; }
+    }
+}

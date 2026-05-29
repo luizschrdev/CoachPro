@@ -1,0 +1,129 @@
+@page "/chat/{AtletaId:int}"
+
+@using MeuApp.Web.Features.Chat.Models
+@using MeuApp.Web.Features.Chat.Services
+@inject ChatService ChatService
+@inject NavigationManager Navigation
+
+<PageTitle>Chat</PageTitle>
+
+@if (conversa is null)
+{
+    <div class="chat-page">
+        <h1>Conversa não encontrada</h1>
+        <button class="secondary-button" @onclick="Voltar">Voltar</button>
+    </div>
+}
+else
+{
+    <div class="chat-page">
+
+        <header class="chat-header">
+            <div>
+                <h1>Chat com atletas</h1>
+                <p>Conversa com @conversa.NomeAtleta</p>
+            </div>
+
+            <button class="secondary-button" @onclick="Voltar">
+                Voltar às mensagens
+            </button>
+        </header>
+
+        <section class="chat-shell">
+
+            <aside class="conversation-list">
+                <span class="conversation-title">Conversas</span>
+
+                @foreach (var item in conversas)
+                {
+                    <NavLink class="conversation-item"
+                             href="@($"/chat/{item.AtletaId}")">
+                        <div class="avatar">@item.Iniciais</div>
+
+                        <div>
+                            <strong>@item.NomeAtleta</strong>
+                            <span>@item.Status</span>
+                        </div>
+                    </NavLink>
+                }
+            </aside>
+
+            <main class="chat-panel">
+
+                <div class="chat-athlete-header">
+                    <div class="avatar large">@conversa.Iniciais</div>
+
+                    <div>
+                        <strong>@conversa.NomeAtleta</strong>
+                        <span>@conversa.Status</span>
+                    </div>
+                </div>
+
+                <div class="messages-area">
+                    @foreach (var mensagem in conversa.Mensagens)
+                    {
+                        <div class="message-row @(mensagem.EnviadaPeloCoach ? "sent" : "received")">
+                            <div class="message-bubble">
+                                @mensagem.Texto
+                            </div>
+
+                            <span class="message-time">@mensagem.Horario</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="chat-input-area">
+                    <input placeholder="Digite uma mensagem"
+                           @bind="novaMensagem"
+                           @bind:event="oninput"
+                           @onkeydown="EnviarComEnter" />
+
+                    <button @onclick="EnviarMensagem">
+                        Enviar
+                    </button>
+                </div>
+
+            </main>
+
+        </section>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int AtletaId { get; set; }
+
+    private ChatConversation? conversa;
+    private List<ChatConversation> conversas = [];
+    private string novaMensagem = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        conversas = ChatService.ListarConversas();
+        conversa = ChatService.ObterConversaPorAtletaId(AtletaId);
+    }
+
+    private void EnviarMensagem()
+    {
+        if (string.IsNullOrWhiteSpace(novaMensagem))
+            return;
+
+        ChatService.EnviarMensagem(AtletaId, novaMensagem);
+        novaMensagem = string.Empty;
+
+        conversa = ChatService.ObterConversaPorAtletaId(AtletaId);
+    }
+
+    private void EnviarComEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            EnviarMensagem();
+        }
+    }
+
+    private void Voltar()
+    {
+        Navigation.NavigateTo("/mensagens");
+    }
+}

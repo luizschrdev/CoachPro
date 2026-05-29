@@ -1,0 +1,161 @@
+@page "/"
+@page "/login"
+@layout AuthLayout
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using MeuApp.Web.Features.Auth.Services
+@inject AuthSessionService AuthSession
+@inject NavigationManager Navigation
+
+<div class="login-page">
+    <div class="login-shell">
+        <section class="login-brand-panel">
+            <div>
+                <div class="brand-mark">CP</div>
+                <h1>CoachPro</h1>
+                <p>Gestão inteligente para coaches e atletas.</p>
+            </div>
+
+            <div class="brand-features">
+                <div>
+                    <strong>Atletas</strong>
+                    <span>Acompanhe evolução, check-ins e protocolos.</span>
+                </div>
+
+                <div>
+                    <strong>Protocolos</strong>
+                    <span>Treino, dieta, suplementação e cardio em um só lugar.</span>
+                </div>
+
+                <div>
+                    <strong>Performance</strong>
+                    <span>Visualize progresso e aderência com clareza.</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="login-card">
+            <div class="login-header">
+                <span class="eyebrow"> Bem-vindo de volta!</span>
+                <h2>Entrar na conta</h2>
+                <p>Acesse como atleta ou coach usando um cadastro da apresentação.</p>
+            </div>
+
+            <div class="demo-accounts" aria-label="Cadastros prontos">
+                @foreach (var account in DemoAccounts)
+                {
+                    <button class="demo-account"
+                            type="button"
+                            @onclick="() => SelecionarConta(account)">
+                        <span class="demo-role">@account.Label</span>
+                        <strong>@account.Name</strong>
+                        <small>@account.Email</small>
+                    </button>
+                }
+            </div>
+
+            <EditForm Model="@loginModel" OnValidSubmit="@Entrar">
+                <DataAnnotationsValidator />
+
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <InputText id="email"
+                            type="email"
+                            class="form-control"
+                            placeholder="seuemail@exemplo.com"
+                            @bind-Value="loginModel.Email" />
+                    <ValidationMessage For="@(() => loginModel.Email)" />
+                </div>
+
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <InputText id="senha"
+                            type="password"
+                            class="form-control"
+                            placeholder="Digite sua senha"
+                            @bind-Value="loginModel.Senha" />
+                    <ValidationMessage For="@(() => loginModel.Senha)" />
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(loginError))
+                {
+                    <div class="login-error">@loginError</div>
+                }
+
+                <div class="login-options">
+                    <label class="remember-me">
+                        <InputCheckbox @bind-Value="loginModel.LembrarMe" />
+                        <span>Lembrar-me</span>
+                    </label>
+
+                    <a href="#">Esqueci minha senha</a>
+                </div>
+
+                <button type="submit" class="login-button">Entrar</button>
+            </EditForm>
+
+            <div class="login-footer">
+                <span>Ainda não tem conta?</span>
+                <a href="#">Criar conta</a>
+            </div>
+
+        </section>
+    </div>
+</div>
+
+
+@code {
+    private LoginModel loginModel = new();
+    private string? loginError;
+
+    private static readonly DemoAccount[] DemoAccounts =
+    [
+        new("Atleta", "Lucas Mendes", "atleta@meuplano.com", "123456", "athlete", "/dashboard"),
+        new("Coach", "Rafael Costa", "coach@meuplano.com", "123456", "coach", "/coach-dashboard")
+    ];
+
+    private void SelecionarConta(DemoAccount account)
+    {
+        loginModel.Email = account.Email;
+        loginModel.Senha = account.Password;
+        loginError = null;
+    }
+
+    private async Task Entrar()
+    {
+        var account = DemoAccounts.FirstOrDefault(user =>
+            string.Equals(user.Email, loginModel.Email.Trim(), StringComparison.OrdinalIgnoreCase)
+            && user.Password == loginModel.Senha);
+
+        if (account is null)
+        {
+            loginError = "E-mail ou senha não corresponde aos cadastros da apresentação.";
+            return;
+        }
+
+        await AuthSession.LoginAsync(account.Role, account.Name);
+        Navigation.NavigateTo(account.StartRoute);
+    }
+
+    private sealed record DemoAccount(
+        string Label,
+        string Name,
+        string Email,
+        string Password,
+        string Role,
+        string StartRoute);
+
+    private class LoginModel
+    {
+        [Required(ErrorMessage = "Informe seu e-mail.")]
+        [EmailAddress(ErrorMessage = "Informe um e-mail válido.")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Informe sua senha.")]
+        [MinLength(6, ErrorMessage = "A senha precisa ter pelo menos 6 caracteres.")]
+        public string Senha { get; set; } = string.Empty;
+
+        public bool LembrarMe { get; set; }
+    }
+}

@@ -1,0 +1,247 @@
+.chat-page {
+    width: 100%;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+}
+
+.chat-header h1 {
+    margin: 0;
+    font-size: 1.55rem;
+    font-weight: 900;
+    color: #ffffff;
+}
+
+.chat-header p {
+    margin: 6px 0 0;
+    color: #d4d7d2;
+}
+
+.secondary-button {
+    min-height: 42px;
+    padding: 0 18px;
+    border-radius: 8px;
+    border: 1px solid #555a54;
+    background: transparent;
+    color: #ffffff;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.18s ease;
+}
+
+.secondary-button:hover {
+    background: rgba(43, 114, 196, 0.18);
+    border-color: #2b72c4;
+    color: #bcd8ff;
+}
+
+.chat-shell {
+    min-height: calc(100vh - 150px);
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 16px;
+}
+
+.conversation-list {
+    background: #282b28;
+    border: 1px solid #454944;
+    border-radius: 8px;
+    padding: 22px 18px;
+}
+
+.conversation-title {
+    display: block;
+    margin-bottom: 22px;
+    color: #d4d7d2;
+    font-size: 0.9rem;
+}
+
+/* NavLink do Blazor precisa de ::deep para remover estilo padrão de link */
+::deep .conversation-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px;
+    padding: 15px 14px;
+    border-radius: 10px;
+    text-decoration: none !important;
+    color: #ffffff !important;
+    margin-bottom: 18px;
+    transition:
+        background 0.18s ease,
+        transform 0.18s ease;
+}
+
+::deep .conversation-item:hover,
+::deep .conversation-item:focus,
+::deep .conversation-item:visited {
+    text-decoration: none !important;
+    color: #ffffff !important;
+}
+
+::deep .conversation-item:hover {
+    background: rgba(43, 114, 196, 0.22);
+    transform: translateX(3px);
+}
+
+::deep .conversation-item.active {
+    background: #2c568d;
+}
+
+::deep .conversation-item strong {
+    display: block;
+    font-size: 0.98rem;
+    font-weight: 900;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    margin-bottom: 6px;
+}
+
+::deep .conversation-item span {
+    display: block;
+    font-size: 0.85rem;
+    color: #d4d7d2 !important;
+    text-decoration: none !important;
+}
+
+.avatar {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 999px;
+    background: #d5f5e8;
+    color: #08744d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.avatar.large {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+}
+
+.chat-panel {
+    background: #282b28;
+    border: 1px solid #454944;
+    border-radius: 8px;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
+}
+
+.chat-athlete-header {
+    padding: 18px;
+    border-bottom: 1px solid #3a3d39;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chat-athlete-header strong {
+    display: block;
+    font-weight: 900;
+}
+
+.chat-athlete-header span {
+    display: block;
+    margin-top: 3px;
+    color: #d4d7d2;
+    font-size: 0.9rem;
+}
+
+.messages-area {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.message-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 18px;
+}
+
+.message-row.received {
+    align-items: flex-start;
+}
+
+.message-row.sent {
+    align-items: flex-end;
+}
+
+.message-bubble {
+    max-width: 58%;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-weight: 800;
+    line-height: 1.45;
+}
+
+.message-row.received .message-bubble {
+    background: #171a17;
+    color: #ffffff;
+}
+
+.message-row.sent .message-bubble {
+    background: #2b72c4;
+    color: #ffffff;
+}
+
+.message-time {
+    margin-top: 6px;
+    font-size: 0.78rem;
+    color: #d4d7d2;
+}
+
+.chat-input-area {
+    padding: 18px;
+    border-top: 1px solid #3a3d39;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+}
+
+.chat-input-area input {
+    height: 46px;
+    border-radius: 8px;
+    border: 1px solid #555a54;
+    background: #202320;
+    color: #ffffff;
+    padding: 0 14px;
+    outline: none;
+}
+
+.chat-input-area input:focus {
+    border-color: #2b72c4;
+}
+
+.chat-input-area button {
+    height: 46px;
+    padding: 0 18px;
+    border-radius: 8px;
+    border: 0;
+    background: #2b72c4;
+    color: #ffffff;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.chat-input-area button:hover {
+    background: #1f5fa8;
+}
+
+@media (max-width: 900px) {
+    .chat-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .message-bubble {
+        max-width: 85%;
+    }
+}

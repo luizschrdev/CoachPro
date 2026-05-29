@@ -1,0 +1,318 @@
+@page "/coach-mensagens"
+
+@using Microsoft.AspNetCore.Components.Web
+
+<PageTitle>Mensagens</PageTitle>
+
+<div class="coach-page coach-messages-page">
+    <header class="screen-header">
+        <h1>Mensagens</h1>
+        <div class="messages-header-actions">
+            <span class="soft-pill warning">@PendentesTexto</span>
+
+            <button class="outline-button new-chat-button" type="button" @onclick="AbrirModalNovoChat">
+                <i class="bi bi-chat-left-text" aria-hidden="true"></i>
+                Iniciar chat
+            </button>
+        </div>
+    </header>
+
+    <section class="messages-layout">
+
+        <aside class="conversations-panel">
+            <div class="conversations-header">
+                <h2>Conversas</h2>
+                <span>@Conversas.Count</span>
+            </div>
+
+            <div class="conversations-list">
+                @foreach (var conversa in Conversas)
+                {
+                    <button type="button"
+                            class="conversation-card @(conversaSelecionada?.Id == conversa.Id ? "active" : "")"
+                            @onclick="() => SelecionarConversa(conversa)">
+
+                        <div class="conversation-avatar">
+                            @conversa.Iniciais
+                        </div>
+
+                        <div class="conversation-content">
+                            <div class="conversation-top">
+                                <strong>@conversa.Nome</strong>
+                                <span>@conversa.Horario</span>
+                            </div>
+
+                            <div class="conversation-bottom">
+                                <p>@conversa.UltimaMensagem</p>
+
+                                @if (conversa.Pendente)
+                                {
+                                    <span class="unread-badge">!</span>
+                                }
+                            </div>
+                        </div>
+                    </button>
+                }
+            </div>
+        </aside>
+
+        <main class="chat-panel">
+            @if (conversaSelecionada is null)
+            {
+                <div class="empty-chat">
+                    <h2>Selecione uma conversa</h2>
+                    <p>Escolha um atleta à esquerda para visualizar o chat.</p>
+                </div>
+            }
+            else
+            {
+                <header class="chat-panel-header">
+                    <div class="conversation-avatar large">
+                        @conversaSelecionada.Iniciais
+                    </div>
+
+                    <div>
+                        <strong>@conversaSelecionada.Nome</strong>
+                        <span>@conversaSelecionada.Status</span>
+                    </div>
+                </header>
+
+                <section class="chat-messages">
+                    @foreach (var mensagem in conversaSelecionada.Mensagens)
+                    {
+                        <div class="chat-message-row @(mensagem.EnviadaPeloCoach ? "sent" : "received")">
+                            <div class="chat-message-bubble">
+                                <p>@mensagem.Texto</p>
+                                <span>@mensagem.Horario</span>
+                            </div>
+                        </div>
+                    }
+                </section>
+
+                <footer class="chat-input-bar">
+                    <input placeholder="Digite uma mensagem"
+                           @bind="novaMensagem"
+                           @bind:event="oninput"
+                           @onkeydown="EnviarComEnter" />
+
+                    <button type="button" @onclick="EnviarMensagem">
+                        Enviar
+                    </button>
+                </footer>
+            }
+        </main>
+
+    </section>
+
+    @if (modalNovoChatAberto)
+    {
+        <div class="modal-backdrop-panel" role="presentation">
+            <section class="modal-card new-chat-modal" role="dialog" aria-modal="true" aria-labelledby="novo-chat-title">
+                <header class="modal-header">
+                    <div>
+                        <span class="eyebrow">Mensagens</span>
+                        <h2 id="novo-chat-title">Iniciar chat</h2>
+                    </div>
+
+                    <button class="modal-close-button" type="button" aria-label="Fechar" @onclick="FecharModalNovoChat">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </button>
+                </header>
+
+                <div class="modal-form-grid single-column">
+                    <label>
+                        <span>Atleta</span>
+                        <select @bind="novoChatAtletaId">
+                            @foreach (var atleta in AtletasParaChat)
+                            {
+                                <option value="@atleta.Id">@atleta.Nome</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+
+                <footer class="modal-actions">
+                    <button class="outline-button" type="button" @onclick="FecharModalNovoChat">
+                        Cancelar
+                    </button>
+                    <button class="primary-action-button" type="button" @onclick="IniciarChat">
+                        Abrir conversa
+                    </button>
+                </footer>
+            </section>
+        </div>
+    }
+</div>
+
+@code {
+    private ConversaPreview? conversaSelecionada;
+    private string novaMensagem = string.Empty;
+    private bool modalNovoChatAberto;
+    private int novoChatAtletaId = 1;
+
+    private readonly List<ConversaPreview> Conversas =
+    [
+        new()
+        {
+            Id = 1,
+            Iniciais = "LM",
+            Nome = "Lucas Mendes",
+            UltimaMensagem = "Coach, consegui aumentar 5kg no supino hoje.",
+            Horario = "09:14",
+            Status = "Ativo agora",
+            Pendente = true,
+            Mensagens =
+            [
+                new("Coach, fiz o treino de peito hoje. Consegui aumentar 5kg no supino.", "09:14", false),
+                new("Ótimo, Lucas! Isso é excelente progressão. Continue assim e na próxima semana ajustamos o volume.", "09:22", true),
+                new("Vou manter o foco. Posso substituir a banana pré-treino por maçã?", "09:35", false)
+            ]
+        },
+        new()
+        {
+            Id = 2,
+            Iniciais = "MA",
+            Nome = "Mariana Alves",
+            UltimaMensagem = "Posso trocar a refeição livre para sábado?",
+            Horario = "08:40",
+            Status = "2h atrás",
+            Pendente = true,
+            Mensagens =
+            [
+                new("Bom dia, coach!", "08:36", false),
+                new("Posso trocar a refeição livre para sábado?", "08:40", false)
+            ]
+        },
+        new()
+        {
+            Id = 3,
+            Iniciais = "JP",
+            Nome = "João Pereira",
+            UltimaMensagem = "Enviei o check-in da semana para revisão.",
+            Horario = "Ontem",
+            Status = "Ontem",
+            Pendente = false,
+            Mensagens =
+            [
+                new("Enviei o check-in da semana para revisão.", "Ontem", false),
+                new("Perfeito, João. Vou revisar e te retorno ainda hoje.", "Ontem", true)
+            ]
+        }
+    ];
+
+    private readonly List<AtletaChatOption> AtletasParaChat =
+    [
+        new(1, "LM", "Lucas Mendes", "Ativo agora"),
+        new(2, "MA", "Mariana Alves", "2h atrás"),
+        new(3, "JP", "João Pereira", "Ontem"),
+        new(4, "AC", "Ana Costa", "Ativa hoje"),
+        new(5, "BS", "Bruno Silva", "3h atrás")
+    ];
+
+    private string PendentesTexto => $"{Conversas.Count(conversa => conversa.Pendente)} pendentes";
+
+    protected override void OnInitialized()
+    {
+        conversaSelecionada = Conversas.FirstOrDefault();
+    }
+
+    private void SelecionarConversa(ConversaPreview conversa)
+    {
+        conversaSelecionada = conversa;
+        conversa.Pendente = false;
+    }
+
+    private void EnviarMensagem()
+    {
+        if (conversaSelecionada is null || string.IsNullOrWhiteSpace(novaMensagem))
+            return;
+
+        var horario = DateTime.Now.ToString("HH:mm");
+
+        conversaSelecionada.Mensagens.Add(new MensagemChat(
+            novaMensagem,
+            horario,
+            true
+        ));
+
+        conversaSelecionada.UltimaMensagem = novaMensagem;
+        conversaSelecionada.Horario = horario;
+        novaMensagem = string.Empty;
+    }
+
+    private void EnviarComEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            EnviarMensagem();
+        }
+    }
+
+    private void AbrirModalNovoChat()
+    {
+        novoChatAtletaId = conversaSelecionada?.Id ?? AtletasParaChat.First().Id;
+        modalNovoChatAberto = true;
+    }
+
+    private void FecharModalNovoChat()
+    {
+        modalNovoChatAberto = false;
+    }
+
+    private void IniciarChat()
+    {
+        var atleta = AtletasParaChat.FirstOrDefault(item => item.Id == novoChatAtletaId);
+
+        if (atleta is null)
+        {
+            return;
+        }
+
+        var conversa = Conversas.FirstOrDefault(item => item.Id == atleta.Id);
+
+        if (conversa is null)
+        {
+            conversa = new ConversaPreview
+            {
+                Id = atleta.Id,
+                Iniciais = atleta.Iniciais,
+                Nome = atleta.Nome,
+                UltimaMensagem = "Nova conversa",
+                Horario = "Agora",
+                Status = atleta.Status,
+                Pendente = false
+            };
+
+            Conversas.Insert(0, conversa);
+        }
+
+        SelecionarConversa(conversa);
+        novaMensagem = string.Empty;
+        modalNovoChatAberto = false;
+    }
+
+    private sealed record AtletaChatOption(
+        int Id,
+        string Iniciais,
+        string Nome,
+        string Status
+    );
+
+    private sealed class ConversaPreview
+    {
+        public int Id { get; set; }
+        public string Iniciais { get; set; } = string.Empty;
+        public string Nome { get; set; } = string.Empty;
+        public string UltimaMensagem { get; set; } = string.Empty;
+        public string Horario { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public bool Pendente { get; set; }
+        public List<MensagemChat> Mensagens { get; set; } = [];
+    }
+
+    private sealed record MensagemChat(
+        string Texto,
+        string Horario,
+        bool EnviadaPeloCoach
+    );
+}

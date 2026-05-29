@@ -1,0 +1,60 @@
+@page "/coach-checkins"
+
+@using MeuApp.Web.Features.Checkins.Models
+@using MeuApp.Web.Features.Checkins.Services
+@inject CheckinService CheckinService
+
+<PageTitle>Check-ins</PageTitle>
+
+<div class="coach-page coach-checkins-page">
+    <header class="screen-header">
+        <h1>Check-ins</h1>
+        <span class="soft-pill info">Semana 6</span>
+    </header>
+
+    <section class="panel-card coach-checkins-panel">
+        <div class="coach-checkin-grid">
+            @foreach (var checkin in Checkins)
+            {
+                <article class="coach-checkin-card">
+                    <div class="coach-checkin-top">
+                        <div>
+                            <strong>@checkin.Nome</strong>
+                            <span>Semana @checkin.Semana</span>
+                        </div>
+
+                        <span class="status-badge @StatusClass(checkin.Status)">
+                            @checkin.Status
+                        </span>
+                    </div>
+
+                    <div class="coach-checkin-summary">
+                        <span>@checkin.Peso</span>
+                        <span>@checkin.Gordura gordura</span>
+                        <span>Aderência @checkin.Aderencia</span>
+                    </div>
+
+                    <NavLink class="row-edit-button checkin-review-button"
+                             href="@($"/coach-checkins/{checkin.Id}")">
+                        <i class="bi bi-clipboard2-check" aria-hidden="true"></i>
+                        Avaliar check-in
+                    </NavLink>
+                </article>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    private List<CheckinPreview> Checkins = [];
+
+    protected override void OnInitialized()
+    {
+        Checkins = CheckinService.Listar();
+    }
+
+    private static string StatusClass(string status)
+    {
+        return status == "Aprovado" ? "success" : "warning";
+    }
+}

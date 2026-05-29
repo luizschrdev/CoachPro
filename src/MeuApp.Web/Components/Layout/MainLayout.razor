@@ -1,0 +1,229 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+
+@using Microsoft.AspNetCore.Components.Routing
+@using MeuApp.Web.Features.Auth.Services
+@inject AuthSessionService AuthSession
+@inject NavigationManager Navigation
+
+@if (!isReady)
+{
+    <div class="app-background">
+        <div class="layout-loading">Carregando...</div>
+    </div>
+}
+else
+{
+    <div class="app-background">
+        <div class="app-shell">
+
+            <aside class="sidebar">
+                <div class="sidebar-brand">
+                    <div class="brand-copy">
+                        <strong>@(AuthSession.IsCoach ? "CoachPro" : "Meu Plano")</strong>
+                        <span>@(AuthSession.Name ?? (AuthSession.IsCoach ? "Rafael Costa" : "Lucas Mendes"))</span>
+                    </div>
+
+                    <button class="mobile-menu-button"
+                            type="button"
+                            aria-label="@(isMobileMenuOpen ? "Fechar menu" : "Abrir menu")"
+                            aria-expanded="@isMobileMenuOpen"
+                            @onclick="ToggleMobileMenu">
+                        <span class="hamburger-icon @(isMobileMenuOpen ? "is-open" : null)" aria-hidden="true">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </span>
+                    </button>
+                </div>
+
+                <nav class="sidebar-nav @(isMobileMenuOpen ? "is-open" : null)">
+                    @if (AuthSession.IsCoach)
+                    {
+                        <div class="nav-section-title">COACH</div>
+
+                        <NavLink class="nav-link" href="coach-dashboard" Match="NavLinkMatch.All" @onclick="CloseMenu">
+                            <i class="bi bi-speedometer2 nav-icon" aria-hidden="true"></i>
+                            <span>Início</span>
+                        </NavLink>
+
+                        <NavLink class="nav-link" href="coach-atletas" @onclick="CloseMenu">
+                            <i class="bi bi-people nav-icon" aria-hidden="true"></i>
+                            <span>Atletas</span>
+                        </NavLink>
+
+                        <NavLink class="nav-link" href="coach-mensagens" @onclick="CloseMenu">
+                            <i class="bi bi-chat-dots nav-icon" aria-hidden="true"></i>
+                            <span>Mensagens</span>
+                        </NavLink>
+
+                        <NavLink class="nav-link" href="coach-checkins" @onclick="CloseMenu">
+                            <i class="bi bi-clipboard2-check nav-icon" aria-hidden="true"></i>
+                            <span>Check-ins</span>
+                        </NavLink>
+                    }
+                    else
+                    {
+                        <div class="nav-section-title">MEU PAINEL</div>
+
+                        <NavLink class="nav-link" href="dashboard" Match="NavLinkMatch.All" @onclick="CloseMenu">
+                            <i class="bi bi-house-door nav-icon" aria-hidden="true"></i>
+                            <span>Início</span>
+                        </NavLink>
+
+                        <NavLink class="nav-link" href="treino" @onclick="CloseMenu">
+                            <i class="bi bi-activity nav-icon" aria-hidden="true"></i>
+                            <span>Meu treino</span>
+                        </NavLink>
+
+                        <NavLink class="nav-link" href="dieta" @onclick="CloseMenu">
+                            <i class="bi bi-basket nav-icon" aria-hidden="true"></i>
+                            <span>Minha dieta</span>
+                        </NavLink>
+
+                        <NavLink class="nav-link" href="suplementos" @onclick="CloseMenu">
+                            <i class="bi bi-capsule nav-icon" aria-hidden="true"></i>
+                            <span>Suplementos</span>
+                        </NavLink>
+
+                        <NavLink class="nav-link" href="cardio" @onclick="CloseMenu">
+                            <i class="bi bi-person-walking nav-icon" aria-hidden="true"></i>
+                            <span>Cardio</span>
+                        </NavLink>
+
+                        <div class="nav-section-title nav-section-spaced">ACOMPANHAMENTO</div>
+
+                        <NavLink class="nav-link" href="coach" @onclick="CloseMenu">
+                            <i class="bi bi-chat nav-icon" aria-hidden="true"></i>
+                            <span>Falar com coach</span>
+                        </NavLink>
+
+                        <NavLink class="nav-link" href="progresso" @onclick="CloseMenu">
+                            <i class="bi bi-graph-up-arrow nav-icon" aria-hidden="true"></i>
+                            <span>Meu progresso</span>
+                        </NavLink>
+                    }
+
+                    <div class="nav-section-title nav-section-spaced">CONTA</div>
+
+                    <button class="nav-link nav-action" type="button" @onclick="Sair">
+                        <i class="bi bi-box-arrow-right nav-icon" aria-hidden="true"></i>
+                        <span>Sair</span>
+                    </button>
+                </nav>
+            </aside>
+
+            <main class="main-content">
+                @Body
+            </main>
+
+        </div>
+    </div>
+}
+
+@code {
+    private static readonly HashSet<string> AthleteRoutes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "dashboard",
+        "inicio",
+        "treino",
+        "dieta",
+        "suplementos",
+        "cardio",
+        "coach",
+        "progresso"
+    };
+
+    private static readonly HashSet<string> CoachRoutes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "coach-dashboard",
+        "coach-atletas",
+        "coach-atleta-plano",
+        "coach-atleta-plano/cardio",
+        "coach-atleta-plano/treino",
+        "coach-atleta-plano/dieta",
+        "coach-atleta-plano/suplementacao",
+        "coach-mensagens",
+        "coach-checkins",
+        "atletas"
+    };
+
+    private static readonly string[] CoachRoutePrefixes =
+    [
+        "coach-checkins/",
+        "coach-atleta-plano/"
+    ];
+
+    private bool isReady;
+    private bool isMobileMenuOpen;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Navigation.LocationChanged += HandleLocationChanged;
+        await AuthSession.LoadAsync();
+        isReady = true;
+        EnsureAllowedRoute();
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        CloseMenu();
+        EnsureAllowedRoute();
+    }
+
+    private void EnsureAllowedRoute()
+    {
+        if (!isReady)
+        {
+            return;
+        }
+
+        var route = GetCurrentRoute();
+
+        if (!AuthSession.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        if (AuthSession.IsCoach && AthleteRoutes.Contains(route))
+        {
+            Navigation.NavigateTo("/coach-dashboard");
+            return;
+        }
+
+        if (AuthSession.IsAthlete && (CoachRoutes.Contains(route) || CoachRoutePrefixes.Any(route.StartsWith)))
+        {
+            Navigation.NavigateTo("/dashboard");
+        }
+    }
+
+    private string GetCurrentRoute()
+    {
+        var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri);
+        var path = relativePath.Split('?', '#')[0].Trim('/').ToLowerInvariant();
+        return string.IsNullOrWhiteSpace(path) ? "login" : path;
+    }
+
+    private async Task Sair()
+    {
+        CloseMenu();
+        await AuthSession.LogoutAsync();
+        Navigation.NavigateTo("/login");
+    }
+
+    private void ToggleMobileMenu()
+    {
+        isMobileMenuOpen = !isMobileMenuOpen;
+    }
+
+    private void CloseMenu()
+    {
+        isMobileMenuOpen = false;
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= HandleLocationChanged;
+    }
+}

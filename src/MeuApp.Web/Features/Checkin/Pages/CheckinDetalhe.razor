@@ -1,0 +1,186 @@
+@page "/coach-checkins/{Id:int}"
+
+@using MeuApp.Web.Features.Checkins.Models
+@using MeuApp.Web.Features.Checkins.Services
+@inject CheckinService CheckinService
+@inject NavigationManager Navigation
+
+<PageTitle>Detalhe do Check-in</PageTitle>
+
+@if (Checkin is null)
+{
+    <div class="coach-page">
+        <header class="screen-header">
+            <h1>Check-in não encontrado</h1>
+
+            <button class="row-edit-button" @onclick="Voltar">
+                Voltar aos check-ins
+            </button>
+        </header>
+    </div>
+}
+else
+{
+    <div class="coach-page checkin-detail-page">
+        <header class="screen-header">
+            <div>
+                <h1>@Checkin.Nome</h1>
+                <p class="screen-subtitle">Check-in semanal · Semana @Checkin.Semana</p>
+            </div>
+
+            <button class="row-edit-button" @onclick="Voltar">
+                Voltar aos check-ins
+            </button>
+        </header>
+
+        <section class="panel-card checkin-detail-card">
+            <div class="checkin-detail-header">
+                <div>
+                    <span class="section-eyebrow">CHECK-IN SEMANAL</span>
+                    <h2>@Checkin.Nome</h2>
+                    <p>Enviado em @Checkin.DataEnvio</p>
+                </div>
+
+                <span class="status-badge @StatusClass(Checkin.Status)">
+                    @Checkin.Status
+                </span>
+            </div>
+
+            <div class="checkin-detail-metrics">
+                <div>
+                    <span>Peso</span>
+                    <strong>@Checkin.Peso</strong>
+                </div>
+
+                <div>
+                    <span>% Gordura</span>
+                    <strong>@Checkin.Gordura</strong>
+                </div>
+
+                <div>
+                    <span>Aderência</span>
+                    <strong>@Checkin.Aderencia</strong>
+                </div>
+
+                <div>
+                    <span>Sono médio</span>
+                    <strong>@Checkin.SonoMedio</strong>
+                </div>
+            </div>
+
+            <div class="checkin-detail-section">
+                <h3>Resumo do atleta</h3>
+                <p>@Checkin.Resumo</p>
+            </div>
+
+            <div class="checkin-detail-section">
+                <h3>Respostas do check-in</h3>
+
+                <article class="checkin-answer-card">
+                    <strong>Como foi a semana de treino?</strong>
+                    <p>@Checkin.RespostaTreino</p>
+                </article>
+
+                <article class="checkin-answer-card">
+                    <strong>Como foi a dieta?</strong>
+                    <p>@Checkin.RespostaDieta</p>
+                </article>
+
+                <article class="checkin-answer-card">
+                    <strong>Dores ou desconfortos?</strong>
+                    <p>@Checkin.RespostaDores</p>
+                </article>
+
+                <article class="checkin-answer-card">
+                    <strong>Observações gerais</strong>
+                    <p>@Checkin.Observacoes</p>
+                </article>
+            </div>
+
+            <footer class="checkin-detail-footer">
+                <button class="row-edit-button" @onclick="Voltar">
+                    Cancelar
+                </button>
+
+                @if (Checkin.Status != "Aprovado")
+                {
+                    <button class="primary-action-button" @onclick="AprovarCheckin">
+                        Aprovar check-in
+                    </button>
+                }
+            </footer>
+        </section>
+    </div>
+
+    @if (mostrarModalPlano)
+    {
+        <div class="modal-backdrop-panel" role="presentation">
+            <section class="modal-card checkin-approval-modal" role="dialog" aria-modal="true" aria-labelledby="alterar-plano-title">
+                <header class="modal-header">
+                    <div>
+                        <span class="eyebrow">Check-in aprovado</span>
+                        <h2 id="alterar-plano-title">Deseja alterar o plano do atleta?</h2>
+                    </div>
+
+                    <button class="modal-close-button" type="button" aria-label="Fechar" @onclick="FecharModalPlano">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </button>
+                </header>
+
+                <p class="modal-helper-text">
+                    O check-in foi aprovado. Você pode manter o plano atual ou acessar o cadastro do atleta para ajustar treino, dieta, cardio e suplementação.
+                </p>
+
+                <footer class="modal-actions">
+                    <button class="outline-button" type="button" @onclick="FecharModalPlano">
+                        Não, manter plano
+                    </button>
+                    <button class="primary-action-button" type="button" @onclick="IrParaCadastroAtleta">
+                        Sim, alterar plano
+                    </button>
+                </footer>
+            </section>
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private CheckinPreview? Checkin;
+    private bool mostrarModalPlano;
+
+    protected override void OnParametersSet()
+    {
+        Checkin = CheckinService.ObterPorId(Id);
+    }
+
+    private void AprovarCheckin()
+    {
+        CheckinService.Aprovar(Id);
+        Checkin = CheckinService.ObterPorId(Id);
+        mostrarModalPlano = true;
+    }
+
+    private void FecharModalPlano()
+    {
+        mostrarModalPlano = false;
+    }
+
+    private void IrParaCadastroAtleta()
+    {
+        var atletaId = Checkin?.AtletaId ?? 1;
+        Navigation.NavigateTo($"/coach-atleta-plano?atletaId={atletaId}");
+    }
+
+    private void Voltar()
+    {
+        Navigation.NavigateTo("/coach-checkins");
+    }
+
+    private static string StatusClass(string status)
+    {
+        return status == "Aprovado" ? "success" : "warning";
+    }
+}

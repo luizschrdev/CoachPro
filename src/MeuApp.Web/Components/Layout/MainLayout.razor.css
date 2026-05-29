@@ -1,0 +1,312 @@
+.app-background {
+    min-height: 100vh;
+    width: 100%;
+    background: #1d1f1c;
+    color: #f5f5f5;
+    padding: 0;
+}
+
+.app-shell {
+    width: 100%;
+    min-width: 0;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: clamp(225px, 15vw, 285px) minmax(0, 1fr);
+    background: #1d1f1c;
+    border: 0;
+    border-radius: 0;
+    overflow: hidden;
+}
+
+.layout-loading {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #c9ccc7;
+    font-weight: 800;
+}
+
+.sidebar {
+    min-width: 0;
+    min-height: 100%;
+    background: #292c29;
+    border-right: 1px solid #41443f;
+}
+
+.sidebar-brand {
+    min-height: 78px;
+    padding: 28px 28px 16px;
+    border-bottom: 1px solid #41443f;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.brand-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+}
+
+.sidebar-brand strong {
+    font-size: 0.98rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.1;
+}
+
+.sidebar-brand span {
+    font-size: 0.82rem;
+    color: #babdb8;
+    line-height: 1.15;
+}
+
+.mobile-menu-button {
+    display: none;
+    width: 42px;
+    height: 42px;
+    border: 1px solid #464a44;
+    border-radius: 8px;
+    background: #20231f;
+    color: #ffffff;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    cursor: pointer;
+}
+
+.mobile-menu-button:hover {
+    border-color: #6487b5;
+    background: rgba(43, 114, 196, 0.18);
+}
+
+.hamburger-icon {
+    width: 19px;
+    height: 14px;
+    display: grid;
+    align-content: space-between;
+}
+
+.hamburger-icon span {
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    display: block;
+    transition:
+        transform 0.18s ease,
+        opacity 0.18s ease;
+}
+
+.hamburger-icon.is-open {
+    align-content: center;
+}
+
+.hamburger-icon.is-open span:nth-child(1) {
+    transform: translateY(2px) rotate(45deg);
+}
+
+.hamburger-icon.is-open span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-icon.is-open span:nth-child(3) {
+    transform: translateY(-2px) rotate(-45deg);
+}
+
+.sidebar-nav {
+    padding: 16px 0 22px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.nav-section-title {
+    padding: 0 28px;
+    margin-bottom: 8px;
+    font-size: 0.76rem;
+    color: #aaaea7;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+}
+
+.nav-section-spaced {
+    margin-top: 14px;
+}
+
+.sidebar-nav ::deep .nav-link {
+    height: 39px;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    color: #e9ebe7;
+    text-decoration: none;
+    font-weight: 750;
+    font-size: 0.94rem;
+    line-height: 1;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+.sidebar-nav .nav-action {
+    width: 100%;
+    height: 39px;
+    padding: 0 28px;
+    border: 0;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    color: #e9ebe7;
+    text-align: left;
+    font-family: inherit;
+    font-weight: 750;
+    font-size: 0.94rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+.sidebar-nav .nav-action .nav-icon {
+    width: 18px;
+    min-width: 18px;
+    color: #d2d5d0;
+    font-size: 1.02rem;
+    text-align: center;
+    transition: color 0.18s ease;
+}
+
+.sidebar-nav ::deep .nav-icon {
+    width: 18px;
+    min-width: 18px;
+    color: #d2d5d0;
+    font-size: 1.02rem;
+    text-align: center;
+    transition: color 0.18s ease;
+}
+
+.sidebar-nav ::deep .nav-link span {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.sidebar-nav ::deep .nav-link:hover {
+    background: rgba(43, 114, 196, 0.24);
+    color: #ffffff;
+}
+
+.sidebar-nav .nav-action:hover {
+    background: rgba(43, 114, 196, 0.24);
+    color: #ffffff;
+}
+
+.sidebar-nav ::deep .nav-link:hover .nav-icon {
+    color: #9fc7ff;
+}
+
+.sidebar-nav .nav-action:hover .nav-icon {
+    color: #9fc7ff;
+}
+
+.sidebar-nav ::deep .nav-link.active {
+    background: #264d7d;
+    color: #aacbff;
+}
+
+.sidebar-nav ::deep .nav-link.active .nav-icon {
+    color: #95bdff;
+}
+
+.main-content {
+    width: 100%;
+    min-width: 0;
+    min-height: 100%;
+    box-sizing: border-box;
+    background: #1d1f1c;
+    padding: clamp(24px, 3vw, 42px);
+    overflow-x: hidden;
+}
+
+@media (max-width: 720px) {
+    .app-background {
+        padding: 0;
+    }
+
+    .app-shell {
+        grid-template-columns: 1fr;
+        width: 100%;
+        min-height: 100vh;
+        border: 0;
+        border-radius: 0;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-height: auto;
+        border-right: 0;
+        border-bottom: 1px solid #41443f;
+    }
+
+    .sidebar-brand {
+        height: auto;
+        min-height: auto;
+        padding: 16px 18px;
+    }
+
+    .mobile-menu-button {
+        display: inline-flex;
+    }
+
+    .sidebar-nav {
+        width: 100%;
+        padding: 8px 0 14px;
+        display: none;
+        gap: 0;
+        overflow: visible;
+        border-top: 1px solid #41443f;
+    }
+
+    .sidebar-nav.is-open {
+        display: grid;
+    }
+
+    .nav-section-title {
+        display: block;
+        padding: 12px 18px 6px;
+        margin: 0;
+        font-size: 0.72rem;
+    }
+
+    .sidebar-nav ::deep .nav-link {
+        width: 100%;
+        height: 42px;
+        padding: 0 18px;
+        border-radius: 0;
+        flex: none;
+        font-size: 0.92rem;
+    }
+
+    .sidebar-nav .nav-action {
+        height: 42px;
+        padding: 0 18px;
+        border-radius: 0;
+        flex: none;
+        font-size: 0.92rem;
+    }
+
+    .sidebar-nav ::deep .nav-icon {
+        font-size: 0.98rem;
+    }
+
+    .main-content {
+        width: auto;
+        max-width: 100%;
+        min-height: auto;
+        box-sizing: border-box;
+        padding: 18px 14px 28px;
+    }
+}

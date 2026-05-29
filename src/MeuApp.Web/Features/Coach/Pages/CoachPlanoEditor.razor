@@ -1,0 +1,492 @@
+@page "/coach-atleta-plano/{Tipo}"
+@using Microsoft.AspNetCore.Components
+@using MeuApp.Web.Features.Atletas.Models
+@using MeuApp.Web.Features.Atletas.Services
+@inject AtletaService AtletaService
+@inject NavigationManager Navigation
+
+<PageTitle>@TituloPagina</PageTitle>
+
+<div class="coach-page plan-editor-page">
+    <header class="screen-header athlete-plan-header">
+        <div>
+            <button class="back-link-button" type="button" @onclick="VoltarParaCadastro">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                Cadastro do atleta
+            </button>
+            <h1>@TituloPagina</h1>
+            <p>@atleta.Name</p>
+        </div>
+
+        <button class="primary-action-button" type="button">
+            <i class="bi bi-check2-circle" aria-hidden="true"></i>
+            Salvar plano
+        </button>
+    </header>
+
+    @switch (TipoNormalizado)
+    {
+        case "treino":
+            <section class="plan-editor-grid">
+                <article class="panel-card plan-editor-panel">
+                    <header class="panel-section-header">
+                        <div>
+                            <span class="eyebrow">Treino</span>
+                            <h2>Configuração do treino</h2>
+                        </div>
+                        <span class="soft-pill info">Treino A - Hoje</span>
+                    </header>
+
+                    <div class="coach-detail-form">
+                        <label>
+                            <span>Nome do plano</span>
+                            <input type="text" value="Hipertrofia - Semana 6" />
+                        </label>
+                        <label>
+                            <span>Divisão semanal</span>
+                            <input type="text" value="A/B/C - 5x na semana" />
+                        </label>
+                        <label>
+                            <span>Foco principal</span>
+                            <input type="text" value="Peito, costas e progressão de carga" />
+                        </label>
+                        <label>
+                            <span>Modelo de ficha</span>
+                            <input type="text" value="Ficha por dia e grupo muscular" />
+                        </label>
+                        <label class="form-wide-field">
+                            <span>Observações do treino</span>
+                            <textarea>Priorizar execução controlada e registrar cargas ao final de cada sessão.</textarea>
+                        </label>
+                    </div>
+                </article>
+
+                <article class="panel-card plan-editor-panel">
+                    <header class="panel-section-header">
+                        <div>
+                            <span class="eyebrow">Fichas</span>
+                            <h2>Cadastro das fichas</h2>
+                        </div>
+                        <button class="row-edit-button" type="button" @onclick="AdicionarFicha">
+                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                            Adicionar ficha
+                        </button>
+                    </header>
+
+                    <div class="workout-sheet-list">
+                        @foreach (var ficha in Fichas)
+                        {
+                            <article class="workout-sheet-card">
+                                <header class="workout-sheet-card-header">
+                                    <div class="workout-sheet-meta">
+                                        <label>
+                                            <span>Nome da ficha</span>
+                                            <input type="text" value="@ficha.Nome" />
+                                        </label>
+                                        <label>
+                                            <span>Dia / foco</span>
+                                            <input type="text" value="@ficha.Foco" />
+                                        </label>
+                                    </div>
+
+                                    <button class="row-delete-button" type="button" aria-label="Apagar ficha" @onclick="() => RemoverFicha(ficha)">
+                                        <i class="bi bi-trash" aria-hidden="true"></i>
+                                    </button>
+                                </header>
+
+                                <div class="workout-exercise-table">
+                                    <span>Exercício</span>
+                                    <span>Séries</span>
+                                    <span>Repetições</span>
+                                    <span>Descanso</span>
+                                    <span></span>
+
+                                    @foreach (var exercicio in ficha.Exercicios)
+                                    {
+                                        <input type="text" value="@exercicio.Nome" />
+                                        <input type="text" value="@exercicio.Series" />
+                                        <input type="text" value="@exercicio.Repeticoes" />
+                                        <input type="text" value="@exercicio.Descanso" />
+                                        <button class="row-delete-button" type="button" aria-label="Apagar exercício" @onclick="() => RemoverExercicio(ficha, exercicio)">
+                                            <i class="bi bi-trash" aria-hidden="true"></i>
+                                        </button>
+                                    }
+                                </div>
+
+                                <button class="row-edit-button workout-add-exercise-button" type="button" @onclick="() => AdicionarExercicio(ficha)">
+                                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                                    Adicionar exercício na ficha
+                                </button>
+                            </article>
+                        }
+                    </div>
+                </article>
+            </section>
+            break;
+
+        case "dieta":
+            <section class="plan-editor-grid">
+                <article class="panel-card plan-editor-panel">
+                    <header class="panel-section-header">
+                        <div>
+                            <span class="eyebrow">Dieta</span>
+                            <h2>Configuração da dieta</h2>
+                        </div>
+                        <span class="soft-pill success">2.800 kcal</span>
+                    </header>
+
+                    <div class="plan-editor-summary">
+                        <label>
+                            <span>Proteína</span>
+                            <input type="text" value="165g" />
+                        </label>
+                        <label>
+                            <span>Carbo</span>
+                            <input type="text" value="230g" />
+                        </label>
+                        <label>
+                            <span>Gordura</span>
+                            <input type="text" value="36g" />
+                        </label>
+                    </div>
+
+                    <div class="coach-detail-form">
+                        <label>
+                            <span>Nome da dieta</span>
+                            <input type="text" value="Plano 2.800 kcal" />
+                        </label>
+                        <label>
+                            <span>Refeição livre</span>
+                            <input type="text" value="Sábado no jantar" />
+                        </label>
+                        <label class="form-wide-field">
+                            <span>Observações da dieta</span>
+                            <textarea>Ajustar carboidratos nos dias sem treino e manter ingestão hídrica acima de 2L.</textarea>
+                        </label>
+                    </div>
+                </article>
+
+                <article class="panel-card plan-editor-panel">
+                    <header class="panel-section-header">
+                        <div>
+                            <span class="eyebrow">Refeições</span>
+                            <h2>Cadastro da dieta</h2>
+                        </div>
+                        <button class="row-edit-button" type="button" @onclick="AdicionarRefeicao">
+                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                            Adicionar refeição
+                        </button>
+                    </header>
+
+                    <div class="plan-builder-list">
+                        @foreach (var refeicao in Refeicoes)
+                        {
+                            <article class="plan-builder-row">
+                                <div class="plan-builder-row-header">
+                                    <strong>@refeicao.Nome</strong>
+                                    <button class="row-delete-button" type="button" aria-label="Apagar refeição" @onclick="() => RemoverRefeicao(refeicao)">
+                                        <i class="bi bi-trash" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+
+                                <label>
+                                    <span>Refeição</span>
+                                    <input type="text" value="@refeicao.Nome" />
+                                </label>
+                                <label>
+                                    <span>Alimentos</span>
+                                    <textarea>@refeicao.Alimentos</textarea>
+                                </label>
+                            </article>
+                        }
+                    </div>
+                </article>
+            </section>
+            break;
+
+        case "suplementacao":
+            <section class="plan-editor-grid">
+                <article class="panel-card plan-editor-panel">
+                    <header class="panel-section-header">
+                        <div>
+                            <span class="eyebrow">Suplementação</span>
+                            <h2>Configuração da suplementação</h2>
+                        </div>
+                        <span class="soft-pill info">@Suplementos.Count suplemento(s)</span>
+                    </header>
+
+                    <div class="coach-detail-form">
+                        <label>
+                            <span>Objetivo</span>
+                            <input type="text" value="Performance e recuperação" />
+                        </label>
+                        <label>
+                            <span>Janela principal</span>
+                            <input type="text" value="Pós-treino e almoço" />
+                        </label>
+                        <label class="form-wide-field">
+                            <span>Orientações gerais</span>
+                            <textarea>Manter creatina todos os dias e revisar vitamina D3 no próximo check-in.</textarea>
+                        </label>
+                    </div>
+                </article>
+
+                <article class="panel-card plan-editor-panel">
+                    <header class="panel-section-header">
+                        <div>
+                            <span class="eyebrow">Itens</span>
+                            <h2>Cadastro da suplementação</h2>
+                        </div>
+                        <button class="row-edit-button" type="button" @onclick="AdicionarSuplemento">
+                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                            Adicionar suplemento
+                        </button>
+                    </header>
+
+                    <div class="plan-editor-table supplement-table">
+                        <span>Suplemento</span>
+                        <span>Dose</span>
+                        <span>Horário</span>
+                        <span></span>
+
+                        @foreach (var suplemento in Suplementos)
+                        {
+                            <input type="text" value="@suplemento.Nome" />
+                            <input type="text" value="@suplemento.Dose" />
+                            <input type="text" value="@suplemento.Horario" />
+                            <button class="row-delete-button" type="button" aria-label="Apagar suplemento" @onclick="() => RemoverSuplemento(suplemento)">
+                                <i class="bi bi-trash" aria-hidden="true"></i>
+                            </button>
+                        }
+                    </div>
+                </article>
+            </section>
+            break;
+
+        default:
+            <section class="plan-editor-grid">
+                <article class="panel-card plan-editor-panel">
+                    <header class="panel-section-header">
+                        <div>
+                            <span class="eyebrow">Cardio</span>
+                            <h2>Configuração do cardio</h2>
+                        </div>
+                        <span class="soft-pill info">Semana 6</span>
+                    </header>
+
+                    <div class="coach-detail-form">
+                        <label>
+                            <span>Nome do protocolo</span>
+                            <input type="text" value="Cardio desta semana" />
+                        </label>
+                        <label>
+                            <span>Frequência semanal</span>
+                            <input type="text" value="3 sessões" />
+                        </label>
+                        <label>
+                            <span>Modalidade principal</span>
+                            <input type="text" value="Caminhada em jejum" />
+                        </label>
+                        <label>
+                            <span>Intensidade</span>
+                            <input type="text" value="Zona 2 / moderada" />
+                        </label>
+                        <label class="form-wide-field">
+                            <span>Observações do cardio</span>
+                            <textarea>Manter intensidade confortável e registrar percepção de esforço após cada sessão.</textarea>
+                        </label>
+                    </div>
+                </article>
+
+                <article class="panel-card plan-editor-panel">
+                    <header class="panel-section-header">
+                        <div>
+                            <span class="eyebrow">Sessões</span>
+                            <h2>Cadastro do cardio</h2>
+                        </div>
+                        <button class="row-edit-button" type="button" @onclick="AdicionarCardio">
+                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                            Adicionar sessão
+                        </button>
+                    </header>
+
+                    <div class="plan-editor-table cardio-table">
+                        <span>Cardio</span>
+                        <span>Duração</span>
+                        <span>Dias</span>
+                        <span>Horário</span>
+                        <span></span>
+
+                        @foreach (var cardio in Cardios)
+                        {
+                            <input type="text" value="@cardio.Nome" />
+                            <input type="text" value="@cardio.Duracao" />
+                            <input type="text" value="@cardio.Dias" />
+                            <input type="text" value="@cardio.Horario" />
+                            <button class="row-delete-button" type="button" aria-label="Apagar cardio" @onclick="() => RemoverCardio(cardio)">
+                                <i class="bi bi-trash" aria-hidden="true"></i>
+                            </button>
+                        }
+                    </div>
+                </article>
+            </section>
+            break;
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? Tipo { get; set; }
+
+    [SupplyParameterFromQuery]
+    public int? AtletaId { get; set; }
+
+    private Atleta atleta = new()
+    {
+        Id = 1,
+        Name = "Lucas Mendes",
+        Email = "atleta@meuplano.com",
+        Telefone = "(48) 99999-9999",
+        Status = "Ativo"
+    };
+
+    private string TipoNormalizado => (Tipo ?? "cardio").Trim().ToLowerInvariant();
+
+    private string TituloPagina => TipoNormalizado switch
+    {
+        "treino" => "Plano de treino",
+        "dieta" => "Plano de dieta",
+        "suplementacao" => "Plano de suplementação",
+        _ => "Plano de cardio"
+    };
+
+    private List<CardioPlano> Cardios { get; } =
+    [
+        new("Caminhada em jejum", "30 min", "Seg, Qua e Sex", "06h30"),
+        new("Bike ergométrica", "20 min", "Sábado", "Pós-treino"),
+        new("HIIT na esteira", "15 min", "Terça", "Sprint interval")
+    ];
+
+    private List<FichaTreino> Fichas { get; } =
+    [
+        new()
+        {
+            Nome = "Treino A",
+            Foco = "Segunda - Peito + tríceps",
+            Exercicios =
+            [
+                new("Supino reto com barra", "4", "10", "90s"),
+                new("Crucifixo inclinado", "3", "12", "60s"),
+                new("Tríceps corda", "4", "12", "60s")
+            ]
+        },
+        new()
+        {
+            Nome = "Treino B",
+            Foco = "Quarta - Costas + bíceps",
+            Exercicios =
+            [
+                new("Puxada frontal", "4", "10", "90s"),
+                new("Remada curvada", "4", "10", "90s"),
+                new("Rosca direta", "3", "12", "60s")
+            ]
+        }
+    ];
+
+    private List<RefeicaoPlano> Refeicoes { get; } =
+    [
+        new("Café da manhã", "Ovos mexidos (4un) + Aveia (80g) + Banana + Whey"),
+        new("Almoço", "Frango grelhado (200g) + Arroz integral + Feijão + Salada"),
+        new("Pré-treino", "Batata doce (200g) + Peito de peru + Whey"),
+        new("Jantar", "Salmão grelhado (150g) + Batata doce (150g) + Brócolis")
+    ];
+
+    private List<SuplementoPlano> Suplementos { get; } =
+    [
+        new("Whey Protein", "30g", "Pós-treino"),
+        new("Creatina", "5g", "Qualquer horário"),
+        new("Vitamina D3", "2000 UI", "Com almoço"),
+        new("Ômega 3", "2 cápsulas", "Com refeições")
+    ];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var atletas = await AtletaService.ListarAsync();
+        atleta = atletas.FirstOrDefault(item => item.Id == AtletaId) ?? atletas.FirstOrDefault() ?? atleta;
+    }
+
+    private void VoltarParaCadastro()
+    {
+        Navigation.NavigateTo($"/coach-atleta-plano?atletaId={atleta.Id}");
+    }
+
+    private void AdicionarCardio()
+    {
+        Cardios.Add(new("Novo cardio", "20 min", "Definir dias", "Definir horário"));
+    }
+
+    private void RemoverCardio(CardioPlano cardio)
+    {
+        Cardios.Remove(cardio);
+    }
+
+    private void AdicionarFicha()
+    {
+        Fichas.Add(new FichaTreino
+        {
+            Nome = $"Treino {Fichas.Count + 1}",
+            Foco = "Novo dia / foco",
+            Exercicios =
+            [
+                new("Novo exercício", "3", "12", "60s")
+            ]
+        });
+    }
+
+    private void RemoverFicha(FichaTreino ficha)
+    {
+        Fichas.Remove(ficha);
+    }
+
+    private void AdicionarExercicio(FichaTreino ficha)
+    {
+        ficha.Exercicios.Add(new("Novo exercício", "3", "12", "60s"));
+    }
+
+    private void RemoverExercicio(FichaTreino ficha, ExercicioTreino exercicio)
+    {
+        ficha.Exercicios.Remove(exercicio);
+    }
+
+    private void AdicionarRefeicao()
+    {
+        Refeicoes.Add(new("Nova refeição", "Descreva os alimentos"));
+    }
+
+    private void RemoverRefeicao(RefeicaoPlano refeicao)
+    {
+        Refeicoes.Remove(refeicao);
+    }
+
+    private void AdicionarSuplemento()
+    {
+        Suplementos.Add(new("Novo suplemento", "Dose", "Horário"));
+    }
+
+    private void RemoverSuplemento(SuplementoPlano suplemento)
+    {
+        Suplementos.Remove(suplemento);
+    }
+
+    private sealed record CardioPlano(string Nome, string Duracao, string Dias, string Horario);
+    private sealed class FichaTreino
+    {
+        public string Nome { get; set; } = string.Empty;
+        public string Foco { get; set; } = string.Empty;
+        public List<ExercicioTreino> Exercicios { get; set; } = [];
+    }
+
+    private sealed record ExercicioTreino(string Nome, string Series, string Repeticoes, string Descanso);
+    private sealed record RefeicaoPlano(string Nome, string Alimentos);
+    private sealed record SuplementoPlano(string Nome, string Dose, string Horario);
+}

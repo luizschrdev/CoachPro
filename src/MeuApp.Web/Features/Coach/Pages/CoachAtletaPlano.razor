@@ -1,0 +1,276 @@
+@page "/coach-atleta-plano"
+@using Microsoft.AspNetCore.Components
+@using MeuApp.Web.Features.Atletas.Models
+@using MeuApp.Web.Features.Atletas.Services
+@inject AtletaService AtletaService
+@inject NavigationManager Navigation
+
+<PageTitle>Cadastro do atleta</PageTitle>
+
+<div class="coach-page coach-athlete-plan-page">
+    <header class="screen-header athlete-plan-header">
+        <div>
+            <button class="back-link-button" type="button" @onclick="VoltarParaAtletas">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                Atletas
+            </button>
+            <h1>Cadastro do atleta</h1>
+            <p>@cadastroModel.Name</p>
+        </div>
+
+        <span class="soft-pill @StatusClass(cadastroModel.Status)">@cadastroModel.Status</span>
+    </header>
+
+    <section class="athlete-plan-grid">
+        <article class="panel-card athlete-data-panel">
+            <header class="panel-section-header">
+                <div>
+                    <span class="eyebrow">Cadastro</span>
+                    <h2>Dados cadastrais</h2>
+                </div>
+                <button class="row-edit-button" type="button">
+                    <i class="bi bi-check2-circle" aria-hidden="true"></i>
+                    Salvar dados
+                </button>
+            </header>
+
+            <div class="coach-detail-form">
+                <label>
+                    <span>Nome completo</span>
+                    <input type="text" @bind="cadastroModel.Name" />
+                </label>
+
+                <label>
+                    <span>E-mail</span>
+                    <input type="email" @bind="cadastroModel.Email" />
+                </label>
+
+                <label>
+                    <span>Telefone</span>
+                    <input type="tel" @bind="cadastroModel.Telefone" />
+                </label>
+
+                <label>
+                    <span>Status</span>
+                    <select @bind="cadastroModel.Status">
+                        <option value="Ativo">Ativo</option>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Pausado">Pausado</option>
+                    </select>
+                </label>
+
+                <label>
+                    <span>Objetivo</span>
+                    <input type="text" @bind="dadosInicio.Objetivo" />
+                </label>
+
+                <label>
+                    <span>Responsável pelo plano</span>
+                    <input type="text" value="Rafael Costa" readonly />
+                </label>
+            </div>
+        </article>
+
+        <article class="panel-card athlete-data-panel">
+            <header class="panel-section-header">
+                <div>
+                    <span class="eyebrow">Avaliação inicial</span>
+                    <h2>Dados de início</h2>
+                </div>
+                <button class="row-edit-button" type="button">
+                    <i class="bi bi-check2-circle" aria-hidden="true"></i>
+                    Atualizar
+                </button>
+            </header>
+
+            <div class="coach-detail-form compact">
+                <label>
+                    <span>Peso inicial</span>
+                    <input type="text" @bind="dadosInicio.Peso" />
+                </label>
+
+                <label>
+                    <span>Altura</span>
+                    <input type="text" @bind="dadosInicio.Altura" />
+                </label>
+
+                <label>
+                    <span>BF inicial</span>
+                    <input type="text" @bind="dadosInicio.Bf" />
+                </label>
+
+                <label>
+                    <span>Cintura</span>
+                    <input type="text" @bind="dadosInicio.Cintura" />
+                </label>
+
+                <label>
+                    <span>Meta de peso</span>
+                    <input type="text" @bind="dadosInicio.MetaPeso" />
+                </label>
+
+                <label>
+                    <span>Início do protocolo</span>
+                    <input type="text" @bind="dadosInicio.Inicio" />
+                </label>
+            </div>
+        </article>
+    </section>
+
+    <section class="panel-card athlete-linked-panel">
+        <header class="panel-section-header">
+            <div>
+                <span class="eyebrow">Plano vinculado</span>
+                <h2>Cadastros do atleta</h2>
+            </div>
+            <span class="soft-pill info">Semana 6</span>
+        </header>
+
+        <div class="linked-plan-grid">
+            @foreach (var vinculo in Vinculos)
+            {
+                <article class="linked-plan-column">
+                    <header>
+                        <i class="bi @vinculo.Icone" aria-hidden="true"></i>
+                        <div>
+                            <strong>@vinculo.Titulo</strong>
+                            <span>@vinculo.Itens.Count registro(s)</span>
+                        </div>
+                    </header>
+
+                    <div class="linked-plan-list">
+                        @foreach (var item in vinculo.Itens)
+                        {
+                            <div class="linked-plan-row">
+                                <strong>@item.Titulo</strong>
+                                <span>@item.Detalhe</span>
+                            </div>
+                        }
+                    </div>
+
+                    <button class="row-edit-button linked-plan-button" type="button" @onclick="() => EditarPlanoVinculado(vinculo)">
+                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                        @vinculo.Acao
+                    </button>
+                </article>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public int? AtletaId { get; set; }
+
+    private Atleta cadastroModel = new()
+    {
+        Name = "Lucas Mendes",
+        Email = "atleta@meuplano.com",
+        Telefone = "(48) 99999-9999",
+        Status = "Ativo"
+    };
+
+    private DadosInicio dadosInicio = new();
+
+    private readonly List<PlanoItem> cardios =
+    [
+        new("Caminhada em jejum", "30 min - Seg, Qua e Sex"),
+        new("Bike ergométrica", "20 min - Sábado")
+    ];
+
+    private readonly List<PlanoItem> treinos =
+    [
+        new("Treino A", "Peito + tríceps - Segunda"),
+        new("Treino B", "Costas + bíceps - Quarta")
+    ];
+
+    private readonly List<PlanoItem> dietas =
+    [
+        new("Plano 2.800 kcal", "165g proteína, 230g carbo, 36g gordura"),
+        new("Refeição livre", "Sábado no jantar")
+    ];
+
+    private readonly List<PlanoItem> suplementos =
+    [
+        new("Whey Protein", "30g pós-treino"),
+        new("Creatina", "5g todos os dias"),
+        new("Vitamina D3", "2000 UI com almoço")
+    ];
+
+    private VinculoPlano[] Vinculos =>
+    [
+        new("Cardio", "bi-person-walking", "Editar cardio", "cardio", cardios),
+        new("Treino", "bi-activity", "Editar treino", "treino", treinos),
+        new("Dieta", "bi-basket", "Editar dieta", "dieta", dietas),
+        new("Suplementação", "bi-capsule", "Editar suplementação", "suplementacao", suplementos)
+    ];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var atletas = await AtletaService.ListarAsync();
+        var atleta = atletas.FirstOrDefault(item => item.Id == AtletaId) ?? atletas.FirstOrDefault();
+
+        if (atleta is not null)
+        {
+            cadastroModel = new Atleta
+            {
+                Id = atleta.Id,
+                Name = atleta.Name,
+                Email = atleta.Email,
+                Telefone = atleta.Telefone,
+                Status = atleta.Status
+            };
+        }
+
+        dadosInicio = new DadosInicio
+        {
+            Peso = AtletaId == 2 ? "64 kg" : "82 kg",
+            Altura = AtletaId == 2 ? "1,66 m" : "1,78 m",
+            Bf = AtletaId == 2 ? "22%" : "16%",
+            Cintura = AtletaId == 2 ? "74 cm" : "86 cm",
+            MetaPeso = AtletaId == 2 ? "60 kg" : "78 kg",
+            Inicio = "Semana 1 - 22/04/2026",
+            Objetivo = AtletaId == 2 ? "Redução de gordura" : "Recomposição corporal"
+        };
+    }
+
+    private void EditarPlanoVinculado(VinculoPlano vinculo)
+    {
+        Navigation.NavigateTo($"/coach-atleta-plano/{vinculo.Tipo}?atletaId={cadastroModel.Id}");
+    }
+
+    private void VoltarParaAtletas()
+    {
+        Navigation.NavigateTo("/coach-atletas");
+    }
+
+    private static string StatusClass(string status)
+    {
+        return status switch
+        {
+            "Ativo" => "success",
+            "Pendente" => "warning",
+            _ => "info"
+        };
+    }
+
+    private sealed class DadosInicio
+    {
+        public string Peso { get; set; } = "82 kg";
+        public string Altura { get; set; } = "1,78 m";
+        public string Bf { get; set; } = "16%";
+        public string Cintura { get; set; } = "86 cm";
+        public string MetaPeso { get; set; } = "78 kg";
+        public string Inicio { get; set; } = "Semana 1 - 22/04/2026";
+        public string Objetivo { get; set; } = "Recomposição corporal";
+    }
+
+    private sealed record PlanoItem(string Titulo, string Detalhe);
+
+    private sealed record VinculoPlano(
+        string Titulo,
+        string Icone,
+        string Acao,
+        string Tipo,
+        IReadOnlyList<PlanoItem> Itens);
+}

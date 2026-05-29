@@ -1,0 +1,140 @@
+@page "/treino"
+
+<PageTitle>Meu treino</PageTitle>
+
+<div class="student-page workout-page">
+    <header class="screen-header">
+        <h1>Meu treino</h1>
+        <div class="workout-header-actions">
+            <span class="soft-pill info">@StatusTreino</span>
+            <button class="outline-button workout-start-button" type="button" @onclick="AbrirFichas">
+                <i class="bi bi-play" aria-hidden="true"></i>
+                Iniciar treino
+            </button>
+        </div>
+    </header>
+
+    <section class="panel-card training-card">
+        <div class="training-heading">
+            <strong>Segunda — Peito + Tríceps</strong>
+            <span class="soft-pill muted">Hoje</span>
+        </div>
+
+        <div class="exercise-row">
+            <strong>Supino reto com barra</strong>
+            <span class="set">4×10</span>
+            <span class="load">80kg</span>
+        </div>
+
+        <div class="exercise-row">
+            <strong>Crucifixo inclinado</strong>
+            <span class="set">3×12</span>
+            <span class="load">20kg</span>
+        </div>
+
+        <div class="exercise-row">
+            <strong>Tríceps corda</strong>
+            <span class="set">4×12</span>
+            <span class="load">—</span>
+        </div>
+    </section>
+
+    <section class="panel-card training-card">
+        <div class="training-heading">
+            <strong>Quarta — Costas + Bíceps</strong>
+            <span class="soft-pill muted">B</span>
+        </div>
+
+        <div class="exercise-row">
+            <strong>Puxada frontal</strong>
+            <span class="set">4×10</span>
+            <span class="load"></span>
+        </div>
+
+        <div class="exercise-row">
+            <strong>Remada curvada</strong>
+            <span class="set">4×10</span>
+            <span class="load"></span>
+        </div>
+
+        <div class="exercise-row">
+            <strong>Rosca direta</strong>
+            <span class="set">3×12</span>
+            <span class="load"></span>
+        </div>
+    </section>
+
+    @if (mostrarFichas)
+    {
+        <div class="modal-backdrop-panel" role="presentation">
+            <section class="modal-card workout-sheet-modal" role="dialog" aria-modal="true" aria-labelledby="fichas-title">
+                <header class="modal-header">
+                    <div>
+                        <span class="eyebrow">Treino</span>
+                        <h2 id="fichas-title">Escolha uma ficha</h2>
+                    </div>
+
+                    <button class="modal-close-button" type="button" aria-label="Fechar" @onclick="FecharFichas">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </button>
+                </header>
+
+                <div class="athlete-sheet-options">
+                    @foreach (var ficha in FichasDisponiveis)
+                    {
+                        <article class="athlete-sheet-option">
+                            <div>
+                                <span>@ficha.Dia</span>
+                                <strong>@ficha.Nome</strong>
+                                <p>@ficha.Foco</p>
+                                <small>@ficha.Detalhe</small>
+                            </div>
+
+                            <button class="primary-action-button" type="button" @onclick="() => IniciarFicha(ficha)">
+                                Iniciar ficha
+                            </button>
+                        </article>
+                    }
+                </div>
+            </section>
+        </div>
+    }
+</div>
+
+@code {
+    private bool mostrarFichas;
+    private FichaTreino? fichaIniciada;
+
+    private string StatusTreino => fichaIniciada is null
+        ? "Treino A · Hoje"
+        : $"{fichaIniciada.Nome} iniciado";
+
+    private readonly List<FichaTreino> FichasDisponiveis =
+    [
+        new("Treino A", "Segunda", "Peito + Tríceps", "3 exercícios · 60 a 90s de descanso"),
+        new("Treino B", "Quarta", "Costas + Bíceps", "3 exercícios · 60 a 90s de descanso")
+    ];
+
+    private void AbrirFichas()
+    {
+        mostrarFichas = true;
+    }
+
+    private void FecharFichas()
+    {
+        mostrarFichas = false;
+    }
+
+    private void IniciarFicha(FichaTreino ficha)
+    {
+        fichaIniciada = ficha;
+        mostrarFichas = false;
+    }
+
+    private sealed record FichaTreino(
+        string Nome,
+        string Dia,
+        string Foco,
+        string Detalhe
+    );
+}

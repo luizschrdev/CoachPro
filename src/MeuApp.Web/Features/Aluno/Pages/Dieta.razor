@@ -1,0 +1,89 @@
+@page "/dieta"
+
+<PageTitle>Minha dieta</PageTitle>
+
+<div class="student-page diet-page">
+    <header class="screen-header">
+        <h1>Minha dieta</h1>
+        <span class="soft-pill success">1.840 / 2.800 kcal</span>
+    </header>
+
+    <section class="panel-card">
+        <div class="macro-card">
+            <div class="macro-box">
+                <strong class="text-blue">165g</strong>
+                <span>Proteína</span>
+            </div>
+
+            <div class="macro-box">
+                <strong class="text-green">230g</strong>
+                <span>Carbo</span>
+            </div>
+
+            <div class="macro-box">
+                <strong class="text-amber">36g</strong>
+                <span>Gordura</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel-card meal-panel">
+        @foreach (var refeicao in Refeicoes)
+        {
+            <article class="meal-card">
+                <div>
+                    <h3><i class="bi @refeicao.Icone @refeicao.CorIcone" aria-hidden="true"></i> @refeicao.Nome</h3>
+                    <p>@refeicao.Descricao</p>
+                </div>
+
+                <button class="status-badge completion-button @(refeicao.Concluida ? "success" : "warning")"
+                        type="button"
+                        disabled="@refeicao.Concluida"
+                        @onclick="() => MarcarRefeicaoConcluida(refeicao)">
+                    @if (refeicao.Concluida)
+                    {
+                        <i class="bi bi-check2" aria-hidden="true"></i>
+                        <span>Concluído</span>
+                    }
+                    else
+                    {
+                        <span>Marcar concluído</span>
+                    }
+                </button>
+            </article>
+        }
+    </section>
+</div>
+
+@code {
+    private readonly List<RefeicaoPlano> Refeicoes =
+    [
+        new("Café da manhã", "Ovos mexidos (4un) + Aveia (80g) + Banana + Whey", "bi-cup-hot-fill", "text-amber", true),
+        new("Almoço", "Frango grelhado (200g) + Arroz integral + Feijão + Salada", "bi-basket2-fill", "text-blue", true),
+        new("Pré-treino", "Batata doce (200g) + Peito de peru + Whey", "bi-lightning-charge-fill", "text-amber", true),
+        new("Jantar", "Salmão grelhado (150g) + Batata doce (150g) + Brócolis", "bi-moon-fill", "text-amber", false)
+    ];
+
+    private static void MarcarRefeicaoConcluida(RefeicaoPlano refeicao)
+    {
+        refeicao.Concluida = true;
+    }
+
+    private sealed class RefeicaoPlano
+    {
+        public RefeicaoPlano(string nome, string descricao, string icone, string corIcone, bool concluida)
+        {
+            Nome = nome;
+            Descricao = descricao;
+            Icone = icone;
+            CorIcone = corIcone;
+            Concluida = concluida;
+        }
+
+        public string Nome { get; }
+        public string Descricao { get; }
+        public string Icone { get; }
+        public string CorIcone { get; }
+        public bool Concluida { get; set; }
+    }
+}

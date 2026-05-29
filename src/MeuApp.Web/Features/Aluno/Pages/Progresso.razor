@@ -1,0 +1,174 @@
+@page "/progresso"
+
+<PageTitle>Meu progresso</PageTitle>
+
+<div class="student-page progress-page">
+    <header class="screen-header">
+        <h1>Meu progresso</h1>
+        <button class="outline-button" type="button" @onclick="AbrirCheckin">
+            <i class="bi bi-camera" aria-hidden="true"></i>
+            @(checkinEnviado ? "Check-in enviado" : "Adicionar check-in")
+        </button>
+    </header>
+
+    <section class="progress-metrics">
+        <article class="panel-card metric-box">
+            <span>Peso atual</span>
+            <strong>82 kg</strong>
+            <small>Início: 78kg ↑ +4kg</small>
+        </article>
+
+        <article class="panel-card metric-box">
+            <span>% Gordura</span>
+            <strong>16%</strong>
+            <small>Início: 20% ↓ -4%</small>
+        </article>
+
+        <article class="panel-card metric-box">
+            <span>Semanas</span>
+            <strong>6/12</strong>
+            <small>50% concluído</small>
+        </article>
+    </section>
+
+    <section class="panel-card">
+        <h2 class="section-title">ADERÊNCIA SEMANAL</h2>
+
+        <div class="adherence-list">
+            <div class="adherence-row">
+                <span>Treinos realizados</span>
+                <strong>92%</strong>
+                <div class="progress-track">
+                    <span class="bar-green" style="width: 92%"></span>
+                </div>
+            </div>
+
+            <div class="adherence-row">
+                <span>Refeições seguidas</span>
+                <strong>78%</strong>
+                <div class="progress-track">
+                    <span class="bar-amber" style="width: 78%"></span>
+                </div>
+            </div>
+
+            <div class="adherence-row">
+                <span>Cardios feitos</span>
+                <strong>85%</strong>
+                <div class="progress-track">
+                    <span class="bar-purple" style="width: 85%"></span>
+                </div>
+            </div>
+
+            <div class="adherence-row">
+                <span>Suplementação</span>
+                <strong>95%</strong>
+                <div class="progress-track">
+                    <span class="bar-blue" style="width: 95%"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @if (modalCheckinAberto)
+    {
+        <div class="modal-backdrop-panel" role="presentation">
+            <section class="modal-card athlete-checkin-modal" role="dialog" aria-modal="true" aria-labelledby="checkin-title">
+                <header class="modal-header">
+                    <div>
+                        <span class="eyebrow">Check-in semanal</span>
+                        <h2 id="checkin-title">Realizar check-in</h2>
+                    </div>
+
+                    <button class="modal-close-button" type="button" aria-label="Fechar" @onclick="CancelarCheckin">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </button>
+                </header>
+
+                <div class="modal-form-grid">
+                    <label>
+                        <span>Peso atual</span>
+                        <input type="text" @bind="checkin.Peso" />
+                    </label>
+
+                    <label>
+                        <span>% Gordura</span>
+                        <input type="text" @bind="checkin.Gordura" />
+                    </label>
+
+                    <label>
+                        <span>Sono médio</span>
+                        <input type="text" @bind="checkin.Sono" />
+                    </label>
+
+                    <label>
+                        <span>Aderência da semana</span>
+                        <select @bind="checkin.Aderencia">
+                            <option>Excelente</option>
+                            <option>Boa</option>
+                            <option>Regular</option>
+                            <option>Difícil</option>
+                        </select>
+                    </label>
+
+                    <label class="modal-wide-field">
+                        <span>Como foram os treinos?</span>
+                        <textarea rows="3" @bind="checkin.Treino"></textarea>
+                    </label>
+
+                    <label class="modal-wide-field">
+                        <span>Como foi a dieta?</span>
+                        <textarea rows="3" @bind="checkin.Dieta"></textarea>
+                    </label>
+
+                    <label class="modal-wide-field">
+                        <span>Dores ou observações</span>
+                        <textarea rows="3" @bind="checkin.Observacoes"></textarea>
+                    </label>
+                </div>
+
+                <footer class="modal-actions">
+                    <button class="outline-button" type="button" @onclick="CancelarCheckin">
+                        Cancelar
+                    </button>
+                    <button class="primary-action-button" type="button" @onclick="EnviarCheckin">
+                        Enviar check-in
+                    </button>
+                </footer>
+            </section>
+        </div>
+    }
+</div>
+
+@code {
+    private bool modalCheckinAberto;
+    private bool checkinEnviado;
+    private CheckinForm checkin = new();
+
+    private void AbrirCheckin()
+    {
+        checkin = new CheckinForm();
+        modalCheckinAberto = true;
+    }
+
+    private void CancelarCheckin()
+    {
+        modalCheckinAberto = false;
+    }
+
+    private void EnviarCheckin()
+    {
+        checkinEnviado = true;
+        modalCheckinAberto = false;
+    }
+
+    private sealed class CheckinForm
+    {
+        public string Peso { get; set; } = "82 kg";
+        public string Gordura { get; set; } = "16%";
+        public string Sono { get; set; } = "7h20";
+        public string Aderencia { get; set; } = "Boa";
+        public string Treino { get; set; } = "Completei os treinos planejados e mantive boa energia.";
+        public string Dieta { get; set; } = "Segui a dieta na maior parte da semana.";
+        public string Observacoes { get; set; } = "Sem dores relevantes.";
+    }
+}

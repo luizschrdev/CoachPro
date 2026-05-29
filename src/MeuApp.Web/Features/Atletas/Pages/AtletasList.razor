@@ -1,0 +1,179 @@
+@page "/atletas"
+@page "/coach-atletas"
+@using MeuApp.Web.Features.Atletas.Models
+@using MeuApp.Web.Features.Atletas.Services
+@inject AtletaService AtletaService
+@inject NavigationManager Navigation
+
+<PageTitle>Atletas</PageTitle>
+
+<div class="coach-page coach-athletes-page">
+    <header class="screen-header">
+        <h1>Atletas</h1>
+        <button class="outline-button" type="button" @onclick="AbrirCadastro">
+            <i class="bi bi-person-plus" aria-hidden="true"></i>
+            Cadastrar atleta
+        </button>
+    </header>
+
+    <section class="panel-card coach-table-panel">
+        @if (atletas is null)
+        {
+            <p class="empty-state">Carregando...</p>
+        }
+        else
+        {
+            <div class="coach-table">
+                <div class="coach-table-head">
+                    <span>Nome</span>
+                    <span>E-mail</span>
+                    <span>Telefone</span>
+                    <span>Cadastro</span>
+                </div>
+
+                @foreach (var atleta in atletas)
+                {
+                    <article class="coach-table-row">
+                        <strong>@atleta.Name</strong>
+                        <span>@atleta.Email</span>
+                        <span>@atleta.Telefone</span>
+                        <div class="coach-row-actions">
+                            <span class="status-badge @StatusClass(atleta.Status)">@atleta.Status</span>
+                            <button class="row-edit-button" type="button" @onclick="() => AcessarPlanoAtleta(atleta)">
+                                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                                Acessar plano do atleta
+                            </button>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+
+    @if (modalAberto)
+    {
+        <div class="modal-backdrop-panel" role="presentation">
+            <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="cadastro-title">
+                <header class="modal-header">
+                    <div>
+                        <span class="eyebrow">Cadastro de atleta</span>
+                        <h2 id="cadastro-title">@(editando ? "Editar cadastro" : "Cadastrar atleta")</h2>
+                    </div>
+
+                    <button class="modal-close-button" type="button" aria-label="Fechar" @onclick="FecharModal">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </button>
+                </header>
+
+                <div class="modal-form-grid">
+                    <label>
+                        <span>Nome</span>
+                        <input type="text" @bind="cadastroModel.Name" placeholder="Nome do atleta" />
+                    </label>
+
+                    <label>
+                        <span>E-mail</span>
+                        <input type="email" @bind="cadastroModel.Email" placeholder="atleta@email.com" />
+                    </label>
+
+                    <label>
+                        <span>Telefone</span>
+                        <input type="tel" @bind="cadastroModel.Telefone" placeholder="(48) 99999-9999" />
+                    </label>
+
+                    <label>
+                        <span>Status</span>
+                        <select @bind="cadastroModel.Status">
+                            <option value="Ativo">Ativo</option>
+                            <option value="Pendente">Pendente</option>
+                            <option value="Pausado">Pausado</option>
+                        </select>
+                    </label>
+                </div>
+
+                <footer class="modal-actions">
+                    <button class="outline-button" type="button" @onclick="FecharModal">Cancelar</button>
+                    <button class="primary-action-button" type="button" @onclick="SalvarCadastro">
+                        @(editando ? "Salvar alterações" : "Cadastrar atleta")
+                    </button>
+                </footer>
+            </section>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Atleta>?  atletas;
+    private Atleta cadastroModel = new();
+    private bool modalAberto;
+    private bool editando;
+
+    protected override async Task OnInitializedAsync(){
+        atletas = await AtletaService.ListarAsync();
+    }
+
+    private void AbrirCadastro()
+    {
+        editando = false;
+        cadastroModel = new Atleta { Status = "Ativo" };
+        modalAberto = true;
+    }
+
+    private void AbrirEdicao(Atleta atleta)
+    {
+        editando = true;
+        cadastroModel = new Atleta
+        {
+            Id = atleta.Id,
+            Name = atleta.Name,
+            Email = atleta.Email,
+            Telefone = atleta.Telefone,
+            Status = atleta.Status
+        };
+        modalAberto = true;
+    }
+
+    private void AcessarPlanoAtleta(Atleta atleta)
+    {
+        Navigation.NavigateTo($"/coach-atleta-plano?atletaId={atleta.Id}");
+    }
+
+    private void SalvarCadastro()
+    {
+        if (atletas is null)
+        {
+            return;
+        }
+
+        if (editando)
+        {
+            var index = atletas.FindIndex(atleta => atleta.Id == cadastroModel.Id);
+            if (index >= 0)
+            {
+                atletas[index] = cadastroModel;
+            }
+        }
+        else
+        {
+            cadastroModel.Id = atletas.Count == 0 ? 1 : atletas.Max(atleta => atleta.Id) + 1;
+            atletas.Add(cadastroModel);
+        }
+
+        FecharModal();
+    }
+
+    private void FecharModal()
+    {
+        modalAberto = false;
+    }
+
+    private static string StatusClass(string status)
+    {
+        return status switch
+        {
+            "Ativo" => "success",
+            "Pendente" => "warning",
+            _ => "info"
+        };
+    }
+}
