@@ -1,0 +1,171 @@
+@page "/minha-assinatura"
+
+@using MeuApp.Web.Features.Auth.Services
+@inject AuthSessionService AuthSession
+
+<PageTitle>Minha assinatura</PageTitle>
+
+<div class="coach-page subscription-page">
+    <header class="screen-header">
+        <div>
+            <h1>Minha assinatura</h1>
+            <p class="screen-subtitle">Dados do coach e plano atual</p>
+        </div>
+
+        <span class="soft-pill success">@Plano.Status</span>
+    </header>
+
+    <section class="subscription-grid">
+        <article class="panel-card subscription-panel">
+            <header class="panel-section-header">
+                <div>
+                    <span class="eyebrow">Conta</span>
+                    <h2>Dados do coach</h2>
+                </div>
+                <span class="status-badge success">@Coach.Status</span>
+            </header>
+
+            <div class="coach-detail-form">
+                <label>
+                    <span>Nome completo</span>
+                    <input type="text" value="@Coach.Nome" readonly />
+                </label>
+
+                <label>
+                    <span>E-mail</span>
+                    <input type="email" value="@Coach.Email" readonly />
+                </label>
+
+                <label>
+                    <span>Telefone</span>
+                    <input type="tel" value="@Coach.Telefone" readonly />
+                </label>
+
+                <label>
+                    <span>Documento</span>
+                    <input type="text" value="@Coach.Documento" readonly />
+                </label>
+
+                <label>
+                    <span>Cadastro desde</span>
+                    <input type="text" value="@Coach.CadastroDesde" readonly />
+                </label>
+
+                <label>
+                    <span>Responsavel financeiro</span>
+                    <input type="text" value="@Coach.ResponsavelFinanceiro" readonly />
+                </label>
+            </div>
+        </article>
+
+        <article class="panel-card subscription-panel">
+            <header class="panel-section-header">
+                <div>
+                    <span class="eyebrow">Plano atual</span>
+                    <h2>@Plano.Nome</h2>
+                </div>
+                <span class="soft-pill info">@Plano.Ciclo</span>
+            </header>
+
+            <div class="subscription-plan-card">
+                <span>Valor mensal</span>
+                <strong>@Plano.Valor</strong>
+                <small>Proxima cobranca em @Plano.ProximaCobranca</small>
+            </div>
+
+            <div class="subscription-usage-grid">
+                <div>
+                    <span>Atletas ativos</span>
+                    <strong>@Plano.AtletasAtivos/@Plano.LimiteAtletas</strong>
+                </div>
+
+                <div>
+                    <span>Check-ins mensais</span>
+                    <strong>@Plano.CheckinsMes</strong>
+                </div>
+
+                <div>
+                    <span>Metodo de pagamento</span>
+                    <strong>@Plano.Pagamento</strong>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <section class="panel-card subscription-panel">
+        <header class="panel-section-header">
+            <div>
+                <span class="eyebrow">Recursos inclusos</span>
+                <h2>Beneficios do plano</h2>
+            </div>
+            <span class="soft-pill info">@Plano.Versao</span>
+        </header>
+
+        <div class="subscription-feature-grid">
+            @foreach (var recurso in Recursos)
+            {
+                <article>
+                    <i class="bi @recurso.Icone" aria-hidden="true"></i>
+                    <div>
+                        <strong>@recurso.Titulo</strong>
+                        <span>@recurso.Descricao</span>
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    private CoachDados Coach => new(
+        AuthSession.Name ?? "Rafael Costa",
+        "coach@meuplano.com",
+        "(48) 98888-7788",
+        "123.456.789-00",
+        "29/05/2026",
+        "Rafael Costa",
+        "Ativo");
+
+    private PlanoAtual Plano { get; } = new(
+        "CoachPro Profissional",
+        "Ativo",
+        "Mensal",
+        "R$ 149,90",
+        "29/06/2026",
+        12,
+        25,
+        "Ilimitados",
+        "Cartao final 4242",
+        "v2026.05");
+
+    private RecursoPlano[] Recursos { get; } =
+    [
+        new("bi-people", "Gestao de atletas", "Cadastro, acompanhamento e planos individuais."),
+        new("bi-clipboard2-check", "Check-ins semanais", "Recebimento e revisao dos check-ins dos atletas."),
+        new("bi-chat-dots", "Mensagens", "Central de conversa com historico por atleta."),
+        new("bi-activity", "Planos completos", "Treino, dieta, cardio e suplementacao em um so lugar.")
+    ];
+
+    private sealed record CoachDados(
+        string Nome,
+        string Email,
+        string Telefone,
+        string Documento,
+        string CadastroDesde,
+        string ResponsavelFinanceiro,
+        string Status);
+
+    private sealed record PlanoAtual(
+        string Nome,
+        string Status,
+        string Ciclo,
+        string Valor,
+        string ProximaCobranca,
+        int AtletasAtivos,
+        int LimiteAtletas,
+        string CheckinsMes,
+        string Pagamento,
+        string Versao);
+
+    private sealed record RecursoPlano(string Icone, string Titulo, string Descricao);
+}

@@ -1,0 +1,167 @@
+@page "/criar-conta"
+@layout AuthLayout
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager Navigation
+
+<PageTitle>Criar conta</PageTitle>
+
+<div class="signup-page">
+    <div class="signup-shell">
+        <section class="signup-brand-panel">
+            <div>
+                <div class="brand-mark">CP</div>
+                <h1>CoachPro</h1>
+                <p>Comece organizando atletas, protocolos, check-ins e mensagens em um painel unico.</p>
+            </div>
+
+            <div class="signup-highlights">
+                <div>
+                    <i class="bi bi-people" aria-hidden="true"></i>
+                    <span>Cadastro de atletas</span>
+                </div>
+
+                <div>
+                    <i class="bi bi-clipboard2-check" aria-hidden="true"></i>
+                    <span>Check-ins semanais</span>
+                </div>
+
+                <div>
+                    <i class="bi bi-credit-card" aria-hidden="true"></i>
+                    <span>Plano profissional</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="signup-card">
+            <div class="signup-header">
+                <span class="eyebrow">Nova conta</span>
+                <h2>Criar conta</h2>
+                <p>Preencha os dados para acessar o CoachPro.</p>
+            </div>
+
+            <EditForm Model="@cadastroModel" OnValidSubmit="@CriarContaAsync">
+                <DataAnnotationsValidator />
+
+                <div class="signup-form-grid">
+                    <div class="form-group modal-wide-field">
+                        <label for="nome">Nome completo</label>
+                        <InputText id="nome"
+                                   class="form-control"
+                                   placeholder="Seu nome"
+                                   @bind-Value="cadastroModel.Nome" />
+                        <ValidationMessage For="@(() => cadastroModel.Nome)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <InputText id="email"
+                                   type="email"
+                                   class="form-control"
+                                   placeholder="seuemail@exemplo.com"
+                                   @bind-Value="cadastroModel.Email" />
+                        <ValidationMessage For="@(() => cadastroModel.Email)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="telefone">Telefone</label>
+                        <InputText id="telefone"
+                                   type="tel"
+                                   class="form-control"
+                                   placeholder="(00) 00000-0000"
+                                   @bind-Value="cadastroModel.Telefone" />
+                        <ValidationMessage For="@(() => cadastroModel.Telefone)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="senha">Senha</label>
+                        <InputText id="senha"
+                                   type="password"
+                                   class="form-control"
+                                   placeholder="Minimo 6 caracteres"
+                                   @bind-Value="cadastroModel.Senha" />
+                        <ValidationMessage For="@(() => cadastroModel.Senha)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmar-senha">Confirmar senha</label>
+                        <InputText id="confirmar-senha"
+                                   type="password"
+                                   class="form-control"
+                                   placeholder="Repita sua senha"
+                                   @bind-Value="cadastroModel.ConfirmarSenha" />
+                        <ValidationMessage For="@(() => cadastroModel.ConfirmarSenha)" />
+                    </div>
+                </div>
+
+                <label class="signup-terms">
+                    <InputCheckbox @bind-Value="cadastroModel.AceiteTermos" />
+                    <span>Li e aceito os termos de uso do CoachPro.</span>
+                </label>
+                <ValidationMessage For="@(() => cadastroModel.AceiteTermos)" />
+
+                @if (!string.IsNullOrWhiteSpace(cadastroError))
+                {
+                    <div class="signup-error">@cadastroError</div>
+                }
+
+                <button type="submit" class="signup-button">Concluir cadastro</button>
+            </EditForm>
+
+            <div class="signup-footer">
+                <span>Ja tem conta?</span>
+                <a href="login">Entrar</a>
+            </div>
+        </section>
+    </div>
+</div>
+
+@code {
+    private CadastroModel cadastroModel = new();
+    private string? cadastroError;
+
+    private async Task CriarContaAsync()
+    {
+        cadastroError = null;
+
+        if (cadastroModel.Senha != cadastroModel.ConfirmarSenha)
+        {
+            cadastroError = "A confirmacao de senha precisa ser igual a senha.";
+            return;
+        }
+
+        if (!cadastroModel.AceiteTermos)
+        {
+            cadastroError = "Aceite os termos para criar sua conta.";
+            return;
+        }
+
+        var nome = Uri.EscapeDataString(cadastroModel.Nome.Trim());
+        Navigation.NavigateTo($"/selecionar-plano?nome={nome}");
+    }
+
+    private sealed class CadastroModel
+    {
+        [Required(ErrorMessage = "Informe seu nome.")]
+        [MinLength(3, ErrorMessage = "Informe pelo menos 3 caracteres.")]
+        public string Nome { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Informe seu e-mail.")]
+        [EmailAddress(ErrorMessage = "Informe um e-mail valido.")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Informe seu telefone.")]
+        public string Telefone { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Informe sua senha.")]
+        [MinLength(6, ErrorMessage = "A senha precisa ter pelo menos 6 caracteres.")]
+        public string Senha { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Confirme sua senha.")]
+        public string ConfirmarSenha { get; set; } = string.Empty;
+
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Aceite os termos para continuar.")]
+        public bool AceiteTermos { get; set; }
+    }
+}

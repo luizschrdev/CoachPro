@@ -1,0 +1,244 @@
+@page "/selecionar-plano"
+@layout AuthLayout
+
+@using Microsoft.AspNetCore.Components
+@inject NavigationManager Navigation
+
+<PageTitle>Selecionar plano</PageTitle>
+
+<div class="plans-page">
+    <main class="plans-shell">
+        <header class="plans-header">
+            <div class="brand-mark">CP</div>
+            <span class="eyebrow">Planos CoachPro</span>
+            <h1>@(planoConfirmado ? "Escolha a forma de pagamento" : "Escolha seu plano")</h1>
+            <p>@(planoConfirmado ? $"Plano {PlanoSelecionado?.Nome} selecionado. Agora escolha o ciclo de cobranca." : "Finalize sua conta com o plano que combina com o tamanho da sua operacao.")</p>
+        </header>
+
+        @if (!planoConfirmado)
+        {
+            <section class="essential-trial-banner">
+                <i class="bi bi-stars" aria-hidden="true"></i>
+                <div>
+                    <strong>Plano Essencial: 7 dias gratis antes da cobranca</strong>
+                    <span>O coach pode testar o CoachPro por uma semana completa. A primeira cobranca acontece somente depois do periodo gratis.</span>
+                </div>
+            </section>
+        }
+
+        <section class="plans-grid" aria-label="Opcoes disponiveis">
+            @if (!planoConfirmado)
+            {
+                @foreach (var plano in Planos)
+                {
+                    <article class="plan-card @(plano.Destaque ? "is-featured" : null) @(PlanoSelecionado?.Nome == plano.Nome ? "is-selected" : null)">
+                        <header>
+                            <span>@plano.Etiqueta</span>
+                            <h2>@plano.Nome</h2>
+                        </header>
+
+                        <div class="plan-price">
+                            <strong>@plano.Valor</strong>
+                            <small>@plano.Ciclo</small>
+                        </div>
+
+                        <ul>
+                            @foreach (var recurso in plano.Recursos)
+                            {
+                                <li>
+                                    <i class="bi bi-check2" aria-hidden="true"></i>
+                                    <span>@recurso</span>
+                                </li>
+                            }
+                        </ul>
+
+                        <button class="plan-button" type="button" @onclick="() => MarcarPlano(plano)">
+                            @(PlanoSelecionado?.Nome == plano.Nome ? "Plano selecionado" : "Selecionar plano")
+                        </button>
+                    </article>
+                }
+            }
+            else
+            {
+                @foreach (var ciclo in CiclosPagamento)
+                {
+                    <article class="plan-card @(ciclo.Destaque ? "is-featured" : null) @(CicloSelecionado?.Nome == ciclo.Nome ? "is-selected" : null)">
+                        <header>
+                            <span>@ciclo.Etiqueta</span>
+                            <h2>@ciclo.Nome</h2>
+                        </header>
+
+                        <div class="plan-price">
+                            <strong>@ciclo.Valor</strong>
+                            <small>@ciclo.Descricao</small>
+                        </div>
+
+                        <ul>
+                            @foreach (var recurso in ciclo.Recursos)
+                            {
+                                <li>
+                                    <i class="bi bi-check2" aria-hidden="true"></i>
+                                    <span>@recurso</span>
+                                </li>
+                            }
+                        </ul>
+
+                        <button class="plan-button" type="button" @onclick="() => MarcarCiclo(ciclo)">
+                            @(CicloSelecionado?.Nome == ciclo.Nome ? "Pagamento selecionado" : "Selecionar pagamento")
+                        </button>
+                    </article>
+                }
+            }
+        </section>
+
+        <section class="plan-confirm-panel">
+            <div>
+                <span>@(planoConfirmado ? "Pagamento selecionado" : "Plano selecionado")</span>
+                <strong>@TextoSelecaoAtual</strong>
+            </div>
+
+            <button class="confirm-plan-button"
+                    type="button"
+                    disabled="@BotaoConfirmacaoDesabilitado"
+                    @onclick="ConfirmarEtapa">
+                @(planoConfirmado ? "Confirmar e ir para pagamento" : "Confirmar plano")
+            </button>
+        </section>
+
+        <footer class="plans-footer">
+            @if (planoConfirmado)
+            {
+                <button class="plans-footer-button" type="button" @onclick="VoltarParaPlanos">
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                    Trocar plano
+                </button>
+            }
+            else
+            {
+                <a href="criar-conta">
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                    Voltar ao cadastro
+                </a>
+            }
+        </footer>
+    </main>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? Nome { get; set; }
+
+    private PlanoCadastro? PlanoSelecionado;
+    private CicloPagamento? CicloSelecionado;
+    private bool planoConfirmado;
+
+    private bool BotaoConfirmacaoDesabilitado => planoConfirmado ? CicloSelecionado is null : PlanoSelecionado is null;
+
+    private string TextoSelecaoAtual =>
+        planoConfirmado
+            ? CicloSelecionado?.Nome ?? "Nenhum pagamento selecionado"
+            : PlanoSelecionado?.Nome ?? "Nenhum plano selecionado";
+
+    private PlanoCadastro[] Planos { get; } =
+    [
+        new(
+            "Essencial",
+            "Para comecar",
+            "R$ 79,90",
+            "por mes",
+            false,
+            ["7 dias gratis antes da cobranca", "Ate 8 atletas ativos", "Treino, dieta e cardio", "Check-ins semanais"]),
+        new(
+            "Profissional",
+            "Mais escolhido",
+            "R$ 149,90",
+            "por mes",
+            true,
+            ["Ate 25 atletas ativos", "Mensagens por atleta", "Check-ins ilimitados", "Minha assinatura"]),
+        new(
+            "Studio",
+            "Operacao completa",
+            "R$ 299,90",
+            "por mes",
+            false,
+            ["Ate 80 atletas ativos", "Equipe de coaches", "Relatorios avancados", "Suporte prioritario"])
+    ];
+
+    private CicloPagamento[] CiclosPagamento =>
+        PlanoSelecionado?.Nome switch
+        {
+            "Essencial" =>
+            [
+                new("Pagamento mensal", "Flexivel", "R$ 79,90", "cobranca mensal", false, ["7 dias gratis antes da cobranca", "Cancele quando quiser", "Renovacao automatica mensal"]),
+                new("Pagamento semestral", "Economize 10%", "R$ 431,46", "equivalente a R$ 71,91/mes", true, ["6 meses de acesso", "Economia de R$ 47,94", "Cobranca unica semestral"]),
+                new("Pagamento anual", "Melhor valor", "R$ 767,04", "equivalente a R$ 63,92/mes", false, ["12 meses de acesso", "Economia de R$ 191,76", "Cobranca unica anual"])
+            ],
+            "Studio" =>
+            [
+                new("Pagamento mensal", "Flexivel", "R$ 299,90", "cobranca mensal", false, ["Cancele quando quiser", "Equipe de coaches", "Renovacao automatica mensal"]),
+                new("Pagamento semestral", "Economize 10%", "R$ 1.619,46", "equivalente a R$ 269,91/mes", true, ["6 meses de acesso", "Economia de R$ 179,94", "Cobranca unica semestral"]),
+                new("Pagamento anual", "Melhor valor", "R$ 2.879,04", "equivalente a R$ 239,92/mes", false, ["12 meses de acesso", "Economia de R$ 719,76", "Cobranca unica anual"])
+            ],
+            _ =>
+            [
+                new("Pagamento mensal", "Flexivel", "R$ 149,90", "cobranca mensal", false, ["Cancele quando quiser", "Check-ins ilimitados", "Renovacao automatica mensal"]),
+                new("Pagamento semestral", "Economize 10%", "R$ 809,46", "equivalente a R$ 134,91/mes", true, ["6 meses de acesso", "Economia de R$ 89,94", "Cobranca unica semestral"]),
+                new("Pagamento anual", "Melhor valor", "R$ 1.439,04", "equivalente a R$ 119,92/mes", false, ["12 meses de acesso", "Economia de R$ 359,76", "Cobranca unica anual"])
+            ]
+        };
+
+    private void MarcarPlano(PlanoCadastro plano)
+    {
+        PlanoSelecionado = plano;
+    }
+
+    private void MarcarCiclo(CicloPagamento ciclo)
+    {
+        CicloSelecionado = ciclo;
+    }
+
+    private void ConfirmarEtapa()
+    {
+        if (!planoConfirmado)
+        {
+            if (PlanoSelecionado is null)
+            {
+                return;
+            }
+
+            planoConfirmado = true;
+            CicloSelecionado = null;
+            return;
+        }
+
+        if (PlanoSelecionado is null || CicloSelecionado is null)
+        {
+            return;
+        }
+
+        var nome = string.IsNullOrWhiteSpace(Nome) ? "Novo coach" : Nome;
+        Navigation.NavigateTo($"/pagamento-plano?nome={Uri.EscapeDataString(nome)}&plano={Uri.EscapeDataString(PlanoSelecionado.Nome)}&ciclo={Uri.EscapeDataString(CicloSelecionado.Nome)}");
+    }
+
+    private void VoltarParaPlanos()
+    {
+        planoConfirmado = false;
+        CicloSelecionado = null;
+    }
+
+    private sealed record PlanoCadastro(
+        string Nome,
+        string Etiqueta,
+        string Valor,
+        string Ciclo,
+        bool Destaque,
+        string[] Recursos);
+
+    private sealed record CicloPagamento(
+        string Nome,
+        string Etiqueta,
+        string Valor,
+        string Descricao,
+        bool Destaque,
+        string[] Recursos);
+}

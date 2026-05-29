@@ -1,0 +1,223 @@
+@page "/pagamento-plano"
+@layout AuthLayout
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using MeuApp.Web.Features.Auth.Services
+@inject AuthSessionService AuthSession
+@inject NavigationManager Navigation
+
+<PageTitle>Pagamento</PageTitle>
+
+<div class="payment-page">
+    <main class="payment-shell">
+        <section class="payment-summary">
+            <div class="brand-mark">CP</div>
+            <span class="eyebrow">Pagamento seguro</span>
+            <h1>Escolha a forma de pagamento</h1>
+            <p>Confirme o metodo de pagamento para ativar sua conta CoachPro.</p>
+
+            <article class="selected-plan-card">
+                <span>Plano selecionado</span>
+                <strong>@PlanoSelecionado.Nome</strong>
+                <small>@ResumoCobranca</small>
+            </article>
+
+            @if (PlanoSelecionado.Nome == "Essencial")
+            {
+                <div class="payment-trial-note">
+                    <i class="bi bi-stars" aria-hidden="true"></i>
+                    <span>Voce tera 7 dias gratis antes da primeira cobranca.</span>
+                </div>
+            }
+        </section>
+
+        <section class="payment-card">
+            <header>
+                <h2>Dados de pagamento</h2>
+                <span class="soft-pill info">@(metodoPagamento == MetodoPagamento.Cartao ? "Cartao de credito" : "PIX")</span>
+            </header>
+
+            <div class="payment-method-tabs" role="tablist" aria-label="Forma de pagamento">
+                <button class="@(metodoPagamento == MetodoPagamento.Cartao ? "is-active" : null)"
+                        type="button"
+                        @onclick="() => metodoPagamento = MetodoPagamento.Cartao">
+                    <i class="bi bi-credit-card" aria-hidden="true"></i>
+                    Cartao de credito
+                </button>
+
+                <button class="@(metodoPagamento == MetodoPagamento.Pix ? "is-active" : null)"
+                        type="button"
+                        @onclick="() => metodoPagamento = MetodoPagamento.Pix">
+                    <i class="bi bi-qr-code" aria-hidden="true"></i>
+                    PIX
+                </button>
+            </div>
+
+            @if (metodoPagamento == MetodoPagamento.Cartao)
+            {
+                <EditForm Model="@cartaoModel" OnValidSubmit="@ConfirmarPagamentoAsync">
+                    <DataAnnotationsValidator />
+
+                    <div class="payment-form-grid">
+                        <div class="form-group modal-wide-field">
+                            <label for="nome-cartao">Nome impresso no cartao</label>
+                            <InputText id="nome-cartao" class="form-control" placeholder="Nome como esta no cartao" @bind-Value="cartaoModel.NomeCartao" />
+                            <ValidationMessage For="@(() => cartaoModel.NomeCartao)" />
+                        </div>
+
+                        <div class="form-group modal-wide-field">
+                            <label for="numero-cartao">Numero do cartao</label>
+                            <InputText id="numero-cartao" class="form-control" placeholder="0000 0000 0000 0000" @bind-Value="cartaoModel.NumeroCartao" />
+                            <ValidationMessage For="@(() => cartaoModel.NumeroCartao)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="validade">Validade</label>
+                            <InputText id="validade" class="form-control" placeholder="MM/AA" @bind-Value="cartaoModel.Validade" />
+                            <ValidationMessage For="@(() => cartaoModel.Validade)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <InputText id="cvv" class="form-control" placeholder="000" @bind-Value="cartaoModel.Cvv" />
+                            <ValidationMessage For="@(() => cartaoModel.Cvv)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="documento-cartao">CPF/CNPJ</label>
+                            <InputText id="documento-cartao" class="form-control" placeholder="Documento do titular" @bind-Value="cartaoModel.Documento" />
+                            <ValidationMessage For="@(() => cartaoModel.Documento)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email-cartao">E-mail de cobranca</label>
+                            <InputText id="email-cartao" type="email" class="form-control" placeholder="financeiro@exemplo.com" @bind-Value="cartaoModel.EmailCobranca" />
+                            <ValidationMessage For="@(() => cartaoModel.EmailCobranca)" />
+                        </div>
+                    </div>
+
+                    <button type="submit" class="payment-button">Confirmar pagamento</button>
+                </EditForm>
+            }
+            else
+            {
+                <EditForm Model="@pixModel" OnValidSubmit="@ConfirmarPagamentoAsync">
+                    <DataAnnotationsValidator />
+
+                    <div class="pix-payment-panel">
+                        <div class="pix-qr-box">
+                            <i class="bi bi-qr-code" aria-hidden="true"></i>
+                        </div>
+
+                        <div class="pix-copy-box">
+                            <span>PIX copia e cola</span>
+                            <strong>@CodigoPix</strong>
+                        </div>
+
+                        <div class="payment-form-grid">
+                            <div class="form-group">
+                                <label for="documento-pix">CPF/CNPJ</label>
+                                <InputText id="documento-pix" class="form-control" placeholder="Documento do pagador" @bind-Value="pixModel.Documento" />
+                                <ValidationMessage For="@(() => pixModel.Documento)" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email-pix">E-mail de cobranca</label>
+                                <InputText id="email-pix" type="email" class="form-control" placeholder="financeiro@exemplo.com" @bind-Value="pixModel.EmailCobranca" />
+                                <ValidationMessage For="@(() => pixModel.EmailCobranca)" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="payment-button">Confirmar pagamento via PIX</button>
+                </EditForm>
+            }
+
+            <a class="payment-back-link" href="@VoltarPlanosUrl">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                Voltar aos planos
+            </a>
+        </section>
+    </main>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? Nome { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Plano { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Ciclo { get; set; }
+
+    private MetodoPagamento metodoPagamento = MetodoPagamento.Cartao;
+    private CartaoModel cartaoModel = new();
+    private PixModel pixModel = new();
+
+    private PlanoResumo PlanoSelecionado => ObterPlano(Plano);
+    private string ResumoCobranca => string.IsNullOrWhiteSpace(Ciclo) ? $"{PlanoSelecionado.Valor} / mes" : $"{Ciclo} - {PlanoSelecionado.Valor}";
+    private string CodigoPix => $"coachpro.pix.{PlanoSelecionado.Nome.ToLowerInvariant()}.{PlanoSelecionado.Valor.Replace("R$ ", string.Empty)}";
+    private string VoltarPlanosUrl => $"/selecionar-plano?nome={Uri.EscapeDataString(NomeUsuario)}";
+    private string NomeUsuario => string.IsNullOrWhiteSpace(Nome) ? "Novo coach" : Nome;
+
+    private async Task ConfirmarPagamentoAsync()
+    {
+        await AuthSession.LoginAsync("coach", NomeUsuario);
+        Navigation.NavigateTo("/coach-dashboard");
+    }
+
+    private static PlanoResumo ObterPlano(string? plano)
+    {
+        return plano switch
+        {
+            "Essencial" => new("Essencial", "R$ 79,90"),
+            "Studio" => new("Studio", "R$ 299,90"),
+            _ => new("Profissional", "R$ 149,90")
+        };
+    }
+
+    private enum MetodoPagamento
+    {
+        Cartao,
+        Pix
+    }
+
+    private sealed class CartaoModel
+    {
+        [Required(ErrorMessage = "Informe o nome impresso no cartao.")]
+        public string NomeCartao { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Informe o numero do cartao.")]
+        [MinLength(12, ErrorMessage = "Informe um cartao valido.")]
+        public string NumeroCartao { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Informe a validade.")]
+        public string Validade { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Informe o CVV.")]
+        [MinLength(3, ErrorMessage = "Informe um CVV valido.")]
+        public string Cvv { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Informe o documento do titular.")]
+        public string Documento { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Informe o e-mail de cobranca.")]
+        [EmailAddress(ErrorMessage = "Informe um e-mail valido.")]
+        public string EmailCobranca { get; set; } = string.Empty;
+    }
+
+    private sealed class PixModel
+    {
+        [Required(ErrorMessage = "Informe o documento do pagador.")]
+        public string Documento { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Informe o e-mail de cobranca.")]
+        [EmailAddress(ErrorMessage = "Informe um e-mail valido.")]
+        public string EmailCobranca { get; set; } = string.Empty;
+    }
+
+    private sealed record PlanoResumo(string Nome, string Valor);
+}
