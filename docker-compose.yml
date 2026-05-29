@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: coachpro-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: coachpro_user
+      POSTGRES_PASSWORD: coachpro_password
+      POSTGRES_DB: coachpro_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - coachpro_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  coachpro_postgres_data:
