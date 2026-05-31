@@ -17,11 +17,22 @@
 
 <body>
     <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+        <div class="boot-loader" role="status" aria-live="polite" aria-label="Carregando o CoachPro">
+            <div class="boot-loader-card">
+                <div class="boot-loader-mark">CP</div>
+                <div class="boot-loader-copy">
+                    <span>CoachPro</span>
+                    <strong>Preparando sua area de login</strong>
+                </div>
+                <div class="boot-loader-track" aria-hidden="true">
+                    <span id="boot-loader-fill"></span>
+                </div>
+                <div class="boot-loader-meta">
+                    <span id="boot-loader-status">Carregando elementos</span>
+                    <span id="boot-loader-percent">0%</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="blazor-error-ui">
@@ -29,7 +40,53 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
-    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js" autostart="false"></script>
+    <script src="js/coachpro.js"></script>
+    <script>
+        (() => {
+            const fill = document.getElementById("boot-loader-fill");
+            const percent = document.getElementById("boot-loader-percent");
+            const status = document.getElementById("boot-loader-status");
+
+            let currentProgress = 0;
+
+            const setProgress = (value) => {
+                currentProgress = Math.max(currentProgress, Math.min(value, 100));
+
+                if (fill) {
+                    fill.style.width = `${currentProgress}%`;
+                }
+
+                if (percent) {
+                    percent.textContent = `${Math.round(currentProgress)}%`;
+                }
+            };
+
+            const steadyProgress = window.setInterval(() => {
+                const ceiling = 92;
+                const increment = currentProgress < 55 ? 3 : 1;
+
+                if (currentProgress < ceiling) {
+                    setProgress(currentProgress + increment);
+                }
+            }, 120);
+
+            setProgress(6);
+
+            Blazor.start().then(() => {
+                window.clearInterval(steadyProgress);
+                setProgress(100);
+            }).catch((error) => {
+                window.clearInterval(steadyProgress);
+
+                if (status) {
+                    status.textContent = "Nao foi possivel carregar o aplicativo.";
+                }
+
+                console.error(error);
+            });
+        })();
+    </script>
 </body>
 
 </html>

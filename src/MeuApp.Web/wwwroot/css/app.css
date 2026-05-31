@@ -16,6 +16,85 @@ input {
     box-sizing: border-box;
 }
 
+.boot-loader {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top left, rgba(45, 91, 149, 0.24), transparent 32rem),
+        #090b09;
+    color: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.boot-loader-card {
+    width: min(100%, 420px);
+    border: 1px solid #3a3d39;
+    border-radius: 8px;
+    background: #181a18;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+    padding: 28px;
+}
+
+.boot-loader-mark {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    background: #2b568d;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 850;
+    margin-bottom: 18px;
+}
+
+.boot-loader-copy span {
+    color: #8ab7ff;
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.boot-loader-copy strong {
+    display: block;
+    margin-top: 8px;
+    color: #ffffff;
+    font-size: 1.25rem;
+    line-height: 1.2;
+}
+
+.boot-loader-track {
+    height: 10px;
+    border-radius: 999px;
+    background: #202320;
+    overflow: hidden;
+    margin-top: 24px;
+}
+
+.boot-loader-track span {
+    width: 0%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #28b990, #2b72c4);
+    display: block;
+    transition: width 0.18s ease;
+}
+
+.boot-loader-meta {
+    margin-top: 12px;
+    color: #c5c8c2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 0.88rem;
+    font-weight: 750;
+}
+
 #blazor-error-ui {
     display: none;
     position: fixed;

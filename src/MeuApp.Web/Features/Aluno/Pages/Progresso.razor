@@ -1,4 +1,5 @@
 @page "/progresso"
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime
 
 <PageTitle>Meu progresso</PageTitle>
 
@@ -124,6 +125,36 @@
                         <span>Dores ou observações</span>
                         <textarea rows="3" @bind="checkin.Observacoes"></textarea>
                     </label>
+
+                        <div class="file-attach-row modal-wide-field">
+                            <span>Anexos</span>
+                            <div class="attach-buttons">
+                                <label class="outline-button attach-button" for="photoInput">
+                                    <i class="bi bi-camera" aria-hidden="true"></i>
+                                    Anexar foto(s)
+                                </label>
+                                <input id="photoInput" type="file" accept="image/*" multiple style="display:none" @onchange="OnPhotosSelected" />
+
+                                <label class="outline-button attach-button" for="pdfInput">
+                                    <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
+                                    Anexar PDF(s)
+                                </label>
+                                <input id="pdfInput" type="file" accept="application/pdf" multiple style="display:none" @onchange="OnPdfsSelected" />
+                            </div>
+                            @if (photoNames.Any() || pdfNames.Any())
+                            {
+                                <ul class="attach-list">
+                                    @foreach (var p in photoNames)
+                                    {
+                                        <li><i class="bi bi-image"></i> @p</li>
+                                    }
+                                    @foreach (var d in pdfNames)
+                                    {
+                                        <li><i class="bi bi-file-earmark-pdf"></i> @d</li>
+                                    }
+                                </ul>
+                            }
+                        </div>
                 </div>
 
                 <footer class="modal-actions">
@@ -159,6 +190,46 @@
     {
         checkinEnviado = true;
         modalCheckinAberto = false;
+    }
+
+    private readonly List<string> photoNames = new();
+    private readonly List<string> pdfNames = new();
+
+    private async Task OnPhotosSelected(ChangeEventArgs e)
+    {
+        if (e.Value is not null)
+        {
+            // In Blazor WASM, file handling uses InputFile; here using basic ChangeEventArgs for plain input.
+            var files = ((Microsoft.AspNetCore.Components.Forms.IBrowserFile[])Array.Empty<Microsoft.AspNetCore.Components.Forms.IBrowserFile>());
+            // Fallback: read file names via JS isn't set up; parse using JS not implemented here — but we can access via ElementReference in future.
+        }
+
+        // Quick UX: just display the selected file names via JS-less approach is limited; instead read via JSInterop later if needed.
+        var input = await JSRuntimeInvokeGetFileNames("photoInput");
+        photoNames.Clear();
+        photoNames.AddRange(input);
+        StateHasChanged();
+    }
+
+    private async Task OnPdfsSelected(ChangeEventArgs e)
+    {
+        var input = await JSRuntimeInvokeGetFileNames("pdfInput");
+        pdfNames.Clear();
+        pdfNames.AddRange(input);
+        StateHasChanged();
+    }
+
+    // Minimal JSInterop helper to get selected file names from a file input by id
+    private async Task<List<string>> JSRuntimeInvokeGetFileNames(string elementId)
+    {
+        try
+        {
+            return await JSRuntime.InvokeAsync<List<string>>("coachpro.getFileNames", elementId);
+        }
+        catch
+        {
+            return new List<string>();
+        }
     }
 
     private sealed class CheckinForm
