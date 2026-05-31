@@ -199,12 +199,9 @@
     {
         if (e.Value is not null)
         {
-            // In Blazor WASM, file handling uses InputFile; here using basic ChangeEventArgs for plain input.
             var files = ((Microsoft.AspNetCore.Components.Forms.IBrowserFile[])Array.Empty<Microsoft.AspNetCore.Components.Forms.IBrowserFile>());
-            // Fallback: read file names via JS isn't set up; parse using JS not implemented here — but we can access via ElementReference in future.
         }
 
-        // Quick UX: just display the selected file names via JS-less approach is limited; instead read via JSInterop later if needed.
         var input = await JSRuntimeInvokeGetFileNames("photoInput");
         photoNames.Clear();
         photoNames.AddRange(input);
@@ -219,7 +216,6 @@
         StateHasChanged();
     }
 
-    // Minimal JSInterop helper to get selected file names from a file input by id
     private async Task<List<string>> JSRuntimeInvokeGetFileNames(string elementId)
     {
         try
